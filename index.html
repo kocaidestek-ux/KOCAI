@@ -593,7 +593,10 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
   <div class="ob-ct"><span>🎯</span> Sınav Türü</div>
   <div class="ob-cd">Hangi sınava hazırlanıyorsun? Her sınavın kendi dünyası var.</div>
   <div class="exam-grid">
-    <button type="button" class="exam-btn" onclick="selEx(this,'YKS')" id="etYKS"><span class="eb-name">YKS</span><span class="eb-sub">TYT + AYT</span></button>
+    <button type="button" class="exam-btn" onclick="selEx(this,'TYT')" id="etTYT"><span class="eb-name">TYT</span><span class="eb-sub">Temel Yetenek</span></button>
+    <button type="button" class="exam-btn" onclick="selEx(this,'AYT-SAY')" id="etAYTSAY"><span class="eb-name">AYT Sayısal</span><span class="eb-sub">Mat+Fen</span></button>
+    <button type="button" class="exam-btn" onclick="selEx(this,'AYT-SÖZ')" id="etAYTSOZ"><span class="eb-name">AYT Sözel</span><span class="eb-sub">Türkçe+Sosyal</span></button>
+    <button type="button" class="exam-btn" onclick="selEx(this,'AYT-EA')" id="etAYTEA"><span class="eb-name">AYT EA</span><span class="eb-sub">Eşit Ağırlık</span></button>
     <button type="button" class="exam-btn" onclick="selEx(this,'LGS')" id="etLGS"><span class="eb-name">LGS</span><span class="eb-sub">8. Sınıf</span></button>
     <button type="button" class="exam-btn" onclick="selEx(this,'KPSS')" id="etKPSS"><span class="eb-name">KPSS</span><span class="eb-sub">Kamu</span></button>
   </div>
@@ -1318,6 +1321,9 @@ function selH(el,val){
 function selEx(el,val){
   document.querySelectorAll('.exam-btn').forEach(b=>b.classList.remove('sel'));
   el.classList.add('sel'); OB.exam=val;
+  // Sınav değişince ders gridini yeniden oluştur
+  const g=document.getElementById('sGrid');if(g)g.innerHTML='';
+  if(manOn)buildSubjGrid();
 }
 
 function obGo(step){
@@ -1713,18 +1719,40 @@ function resetApp(){if(confirm('Profil silinecek. Emin misin?')){['k_profile','k
 // ═══════════════════════════════════════
 // UPLOAD & ANALYSIS
 // ═══════════════════════════════════════
-const SUBJS=[
-  {n:'Türkçe',e:'📝'},{n:'Matematik',e:'🔢'},{n:'Fizik',e:'⚛️'},
-  {n:'Kimya',e:'🧪'},{n:'Biyoloji',e:'🧬'},{n:'Tarih',e:'🏛️'},
-  {n:'Coğrafya',e:'🗺️'},{n:'Felsefe',e:'💭'},{n:'Din Kültürü',e:'📖'},
-];
+const SUBJS_MAP={
+  'TYT':[
+    {n:'Türkçe',e:'📝'},{n:'Matematik',e:'🔢'},
+    {n:'Fizik',e:'⚛️'},{n:'Kimya',e:'🧪'},{n:'Biyoloji',e:'🧬'},
+    {n:'Tarih',e:'🏛️'},{n:'Coğrafya',e:'🗺️'},{n:'Felsefe',e:'💭'},{n:'Din Kültürü',e:'📖'}
+  ],
+  'AYT-SAY':[
+    {n:'Matematik',e:'🔢'},{n:'Fizik',e:'⚛️'},{n:'Kimya',e:'🧪'},{n:'Biyoloji',e:'🧬'}
+  ],
+  'AYT-SÖZ':[
+    {n:'Türkçe',e:'📝'},{n:'Tarih',e:'🏛️'},{n:'Coğrafya',e:'🗺️'},{n:'Felsefe',e:'💭'}
+  ],
+  'AYT-EA':[
+    {n:'Türkçe',e:'📝'},{n:'Matematik',e:'🔢'},{n:'Tarih',e:'🏛️'},{n:'Coğrafya',e:'🗺️'}
+  ],
+  'LGS':[
+    {n:'Türkçe',e:'📝'},{n:'Matematik',e:'🔢'},
+    {n:'Fen Bilimleri',e:'🔬'},{n:'İnkılap Tarihi',e:'🏛️'},{n:'Din Kültürü',e:'📖'},{n:'Yabancı Dil',e:'🌍'}
+  ],
+  'KPSS':[
+    {n:'Türkçe',e:'📝'},{n:'Matematik',e:'🔢'},
+    {n:'Tarih',e:'🏛️'},{n:'Coğrafya',e:'🗺️'},{n:'Vatandaşlık',e:'⚖️'}
+  ]
+};
+function getSUBJS(){return SUBJS_MAP[OB.exam]||SUBJS_MAP['TYT'];}
+const SUBJS=SUBJS_MAP['TYT']; // geriye dönük uyumluluk için
 
 let b64=null,manOn=false;
 
 function buildSubjGrid(){
   const g=document.getElementById('sGrid');
-  if(!g||g.children.length)return;
-  SUBJS.forEach(s=>g.innerHTML+=`
+  if(!g)return;
+  g.innerHTML='';
+  getSUBJS().forEach(s=>g.innerHTML+=`
     <div class="subj-r">
       <span>${s.e}</span><div class="sn">${s.n}</div>
       <input class="ni" type="number" min="-10" max="40" placeholder="–" id="ni-${s.n}" oninput="chkR()"/>
@@ -1787,7 +1815,7 @@ Fotoğrafta olmayan derslerin değerleri 0 kalabilir. Net değerlerini küsuratl
 
   // Formunu doldur
   let herhangiNetVar=false;
-  SUBJS.forEach(s=>{
+  getSUBJS().forEach(s=>{
     const el=document.getElementById('ni-'+s.n);
     if(!el)return;
     const dersData=parsed[s.n];
@@ -1847,7 +1875,7 @@ function hesapla(){
   // ── 2. NET OKUMA ─────────────────────────────────────────
   let toplamNet = 0;
   const dersler = [];
-  SUBJS.forEach(s=>{
+  getSUBJS().forEach(s=>{
     const el  = document.getElementById('ni-'+s.n);
     const val = el ? el.value.trim() : '';
     if(val!==''){
@@ -2345,7 +2373,7 @@ Fotoğrafta olmayan dersler 0 kalır. Ondalık kullan (örn: 26.25). TYT ve AYT 
 
   // ADIM 2: Okunan netleri forma doldur
   let okunan=0;
-  SUBJS.forEach(s=>{
+  getSUBJS().forEach(s=>{
     const el=document.getElementById('ni-'+s.n);
     if(!el) return;
     const v=netler[s.n];
@@ -2616,7 +2644,7 @@ function resetAn(){
   document.getElementById('manArea').style.display='none';
   document.getElementById('mArr').textContent='▸';
   document.getElementById('startB').disabled=true;
-  SUBJS.forEach(s=>{const el=document.getElementById('ni-'+s.n);if(el)el.value='';});
+  getSUBJS().forEach(s=>{const el=document.getElementById('ni-'+s.n);if(el)el.value='';});
 }
 
 // ── PWA ──
