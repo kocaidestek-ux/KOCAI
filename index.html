@@ -1,0 +1,2654 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KoçAI – Netlerini Çek, Geleceğini Planla.</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KoçAI">
+<meta name="theme-color" content="#f5c842">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KoçAI">
+<meta name="theme-color" content="#f5c842">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:    #08080a;
+  --bg2:   #0f0f12;
+  --card:  #111115;
+  --border: rgba(255,210,80,0.12);
+  --border2:rgba(255,210,80,0.28);
+  --gold:  #f5c842;
+  --gold2: #ffd84d;
+  --gold3: #b8962e;
+  --owl:   #e8a830;
+  --text:  #f0ede4;
+  --muted: #5a5a6a;
+  --muted2:#8a8a9a;
+  --teal:  #2eb8b0;
+  --success:#3a9e6a;
+  --danger:#b84a4a;
+  --warn:  #c09030;
+}
+
+/* TEMA: Safir (Mavi) */
+[data-theme="safir"] {
+  --bg:#050810;--bg2:#080d18;--card:#0c1020;
+  --border:rgba(80,140,255,0.15);--border2:rgba(80,140,255,0.3);
+  --gold:#5090ff;--gold2:#70b0ff;--gold3:#3060cc;
+  --teal:#40d0ff;--text:#e8eef8;
+}
+
+/* TEMA: Orman */
+[data-theme="orman"] {
+  --bg:#050a06;--bg2:#081008;--card:#0c1510;
+  --border:rgba(60,180,80,0.15);--border2:rgba(60,180,80,0.3);
+  --gold:#40c060;--gold2:#60e080;--gold3:#208040;
+  --teal:#80ffb0;--text:#e8f4e8;
+}
+
+/* TEMA: Şafak */
+[data-theme="safak"] {
+  --bg:#080510;--bg2:#100818;--card:#150c20;
+  --border:rgba(160,80,255,0.15);--border2:rgba(160,80,255,0.3);
+  --gold:#c060ff;--gold2:#d880ff;--gold3:#8040cc;
+  --teal:#ff80d0;--text:#f0e8ff;
+}
+
+/* TEMA: Aydınlık */
+[data-theme="aydinlik"] {
+  --bg:#f5f5f0;--bg2:#ebebE6;--card:#ffffff;
+  --border:rgba(180,150,50,0.2);--border2:rgba(180,150,50,0.4);
+  --gold:#b89030;--gold2:#d4a840;--gold3:#8a6820;
+  --teal:#2a8a8a;--text:#1a1a1a;--muted:#888;--muted2:#555;
+}
+
+/* Theme switcher */
+.theme-switcher {
+  display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;
+}
+.theme-btn {
+  width:32px;height:32px;border-radius:50%;border:2px solid transparent;
+  cursor:pointer;transition:all 0.25s;position:relative;
+}
+.theme-btn:hover{transform:scale(1.15);}
+.theme-btn.act{border-color:var(--text);box-shadow:0 0 10px rgba(255,255,255,0.3);}
+.theme-btn::after{content:attr(data-name);position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:0.55rem;white-space:nowrap;color:var(--muted);opacity:0;transition:opacity 0.2s;}
+.theme-btn:hover::after{opacity:1;}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* Noise overlay */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:999;opacity:0.8;}
+
+/* Ambient */
+.amb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(100px);}
+.a1{width:600px;height:600px;background:radial-gradient(circle,rgba(245,200,66,0.07),transparent 65%);top:-200px;right:-150px;animation:d1 22s ease-in-out infinite alternate;}
+.a2{width:400px;height:400px;background:radial-gradient(circle,rgba(46,184,176,0.05),transparent 65%);bottom:-100px;left:-100px;animation:d2 28s ease-in-out infinite alternate;}
+@keyframes d1{to{transform:translate(-60px,80px);}}
+@keyframes d2{to{transform:translate(80px,-60px);}}
+
+/* ════════ ONBOARDING ════════ */
+#ob{min-height:100vh;display:flex;flex-direction:column;align-items:center;position:relative;z-index:10;background:var(--bg);padding-bottom:80px;}
+
+/* Splash hero */
+.ob-hero{width:100%;text-align:center;padding:56px 24px 36px;border-bottom:1px solid var(--border);margin-bottom:32px;background:linear-gradient(180deg,rgba(245,200,66,0.04),transparent);}
+
+/* OWL LOGO */
+.owl-wrap{margin:0 auto 20px;position:relative;width:80px;height:80px;}
+.owl-bg{width:80px;height:80px;border-radius:22px;background:linear-gradient(135deg,#1a1a20,#111115);border:1.5px solid rgba(245,200,66,0.4);box-shadow:0 8px 36px rgba(0,0,0,0.6),inset 0 1px 0 rgba(245,200,66,0.25);display:flex;align-items:center;justify-content:center;}
+
+.ob-title{font-family:'Lora',serif;font-size:3rem;font-weight:800;letter-spacing:0.04em;display:block;line-height:1;margin-bottom:4px;}
+.ob-title .koc{color:var(--text);}
+.ob-title .ai{color:var(--gold);}
+.ob-sub{font-size:0.68rem;font-weight:600;letter-spacing:0.36em;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:14px;opacity:0.85;}
+.ob-slogan{font-size:0.75rem;color:var(--muted2);letter-spacing:0.1em;}
+.ob-slogan em{color:var(--gold3);font-style:normal;}
+
+/* Step progress */
+.ob-steps{display:flex;align-items:center;width:100%;max-width:520px;padding:0 28px;margin-bottom:28px;}
+.os-item{display:flex;align-items:center;gap:8px;}
+.os-dot{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);background:transparent;color:var(--muted);font-size:0.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all 0.4s;flex-shrink:0;}
+.os-dot.act{background:linear-gradient(135deg,var(--gold3),var(--gold));border-color:var(--gold);color:#08080a;box-shadow:0 0 14px rgba(245,200,66,0.35);}
+.os-dot.fin{background:var(--success);border-color:var(--success);color:white;}
+.os-lbl{font-size:0.64rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;transition:color 0.4s;}
+.os-lbl.act{color:var(--gold);}
+.os-lbl.fin{color:var(--success);}
+.os-line{flex:1;height:1px;margin:0 8px;background:var(--border);transition:background 0.4s;}
+.os-line.fin{background:var(--success);}
+
+/* Cards */
+.ob-card{width:100%;max-width:520px;margin:0 auto 16px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 26px;position:relative;overflow:hidden;display:none;animation:fadeUp 0.45s cubic-bezier(0.16,1,0.3,1);}
+.ob-card.act{display:block;}
+.ob-card::before{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,var(--gold3),transparent);opacity:0.35;}
+
+.ob-ct{display:flex;align-items:center;gap:10px;font-family:'Lora',serif;font-size:1.15rem;font-weight:700;margin-bottom:6px;}
+.ob-cd{font-size:0.8rem;color:var(--muted2);line-height:1.7;margin-bottom:22px;}
+
+/* Fields */
+.fl{font-size:0.6rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold3);margin-bottom:7px;display:block;}
+
+.ob-inp{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:11px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.9rem;padding:13px 16px;margin-bottom:16px;display:block;transition:all 0.25s;}
+.ob-inp:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,200,66,0.08);}
+.ob-inp::placeholder{color:var(--muted);}
+
+.ob-sel{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:11px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.88rem;padding:12px 16px;margin-bottom:16px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23b8962e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;}
+.ob-sel:focus{outline:none;border-color:var(--gold);}
+.ob-sel option{background:var(--card);}
+
+/* Autocomplete */
+.ac-wrap{position:relative;margin-bottom:16px;}
+.ac-inp{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:11px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.9rem;padding:13px 16px;transition:all 0.25s;}
+.ac-inp:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(245,200,66,0.08);}
+.ac-inp::placeholder{color:var(--muted);}
+.ac-list{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);border:1px solid var(--border2);border-radius:12px;max-height:220px;overflow-y:auto;z-index:200;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+.ac-list.open{display:block;}
+.ac-item{padding:11px 16px;font-size:0.86rem;cursor:pointer;transition:background 0.15s;border-bottom:1px solid var(--border);color:var(--muted2);}
+.ac-item:last-child{border:none;}
+.ac-item:hover{background:rgba(245,200,66,0.07);color:var(--gold);}
+.ac-item strong{color:var(--text);}
+
+/* Exam type */
+.exam-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px;}
+.exam-btn{padding:18px 8px;border:1.5px solid var(--border);border-radius:14px;background:transparent;cursor:pointer;text-align:center;transition:all 0.25s;}
+.exam-btn:hover{border-color:var(--border2);}
+.exam-btn.sel{border-color:var(--gold);background:rgba(245,200,66,0.08);box-shadow:0 0 18px rgba(245,200,66,0.12);}
+.eb-name{font-family:'Lora',serif;font-size:1.2rem;font-weight:700;display:block;margin-bottom:4px;color:var(--muted2);transition:color 0.25s;}
+.exam-btn.sel .eb-name{color:var(--gold2);}
+.eb-sub{font-size:0.64rem;color:var(--muted);font-weight:500;}
+
+/* Hours */
+.hrs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;}
+.hr-pill{padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-size:0.8rem;font-weight:500;cursor:pointer;transition:all 0.22s;}
+.hr-pill:hover{border-color:var(--gold3);color:var(--gold3);}
+.hr-pill.sel{background:rgba(245,200,66,0.12);border-color:var(--gold);color:var(--gold2);}
+
+/* Mizaç questions */
+.miz-q{margin-bottom:22px;}
+.miz-qtext{font-size:0.9rem;font-weight:500;margin-bottom:12px;line-height:1.6;color:var(--text);}
+.miz-opts{display:flex;flex-direction:column;gap:8px;}
+.miz-opt{padding:12px 16px;border:1px solid var(--border);border-radius:11px;background:transparent;color:var(--muted2);font-size:0.82rem;text-align:left;cursor:pointer;transition:all 0.22s;font-family:'Plus Jakarta Sans',sans-serif;}
+.miz-opt:hover{border-color:var(--border2);color:var(--text);}
+.miz-opt.sel{border-color:var(--gold);background:rgba(245,200,66,0.08);color:var(--gold2);}
+
+/* Progress bar */
+.miz-progress{height:3px;background:var(--border);border-radius:999px;margin-bottom:20px;overflow:hidden;}
+.miz-fill{height:100%;background:linear-gradient(90deg,var(--gold3),var(--gold));border-radius:999px;transition:width 0.4s ease;}
+.miz-counter{font-size:0.68rem;color:var(--muted);margin-bottom:12px;letter-spacing:0.08em;}
+
+/* Buttons */
+.btn-gold{width:100%;padding:16px;background:linear-gradient(135deg,#c9901a,#f5c842,#b8882a);border:none;border-radius:13px;color:#08080a;font-family:'Plus Jakarta Sans',sans-serif;font-size:0.85rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden;}
+.btn-gold::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.2),transparent);opacity:0;transition:opacity 0.3s;}
+.btn-gold:hover:not(:disabled)::before{opacity:1;}
+.btn-gold:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 32px rgba(245,200,66,0.35);}
+.btn-gold:disabled{opacity:0.28;cursor:not-allowed;}
+.btn-ghost{width:100%;padding:13px;margin-top:10px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-size:0.82rem;cursor:pointer;transition:all 0.25s;font-family:'Plus Jakarta Sans',sans-serif;}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text);}
+
+/* Summary box */
+.sum-box{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;}
+.sum-row{font-size:0.86rem;line-height:2.1;color:var(--muted2);}
+.sum-row strong{color:var(--text);}
+
+/* Profile badge */
+.prof-badge{background:linear-gradient(135deg,rgba(245,200,66,0.08),rgba(46,184,176,0.05));border:1px solid rgba(46,184,176,0.2);border-radius:13px;padding:16px 18px;margin-bottom:20px;}
+.pb-label{font-size:0.6rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;}
+.pb-text{font-family:'Lora',serif;font-size:0.95rem;font-style:italic;line-height:1.7;color:var(--text);}
+
+/* ════════ NAV ════════ */
+.nav{position:sticky;top:0;z-index:500;background:rgba(8,8,10,0.92);backdrop-filter:blur(20px) saturate(1.4);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;height:64px;gap:0;}
+[data-theme="aydinlik"] .nav{background:rgba(245,245,240,0.95);}
+[data-theme="aydinlik"] .nav-name .k{color:#1a1a1a;}
+[data-theme="aydinlik"] .nav-tab{color:#555;}
+[data-theme="aydinlik"] .nav-tab.act{color:var(--gold);}
+
+.nav-brand{display:flex;align-items:center;gap:12px;margin-right:auto;}
+.nav-owl{width:34px;height:34px;background:linear-gradient(135deg,#1a1a20,#111115);border:1px solid rgba(245,200,66,0.35);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+.nav-name{font-family:'Lora',serif;font-size:1.45rem;font-weight:800;letter-spacing:0.04em;line-height:1;}
+.nav-name .k{color:var(--text);}
+.nav-name .ai{color:var(--gold);}
+.nav-sub{font-size:0.48rem;font-weight:600;letter-spacing:0.3em;text-transform:uppercase;color:var(--teal);margin-top:2px;opacity:0.8;}
+
+.nav-tabs{display:flex;gap:2px;}
+.nav-tab{padding:9px 18px;border:none;background:transparent;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.76rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border-radius:8px;transition:all 0.25s;}
+.nav-tab:hover{color:var(--text);background:rgba(255,255,255,0.04);}
+.nav-tab.act{color:var(--gold);background:rgba(245,200,66,0.08);}
+
+/* ════════ PAGES ════════ */
+.page{display:none;position:relative;z-index:1;}
+.page.act{display:block;animation:fadeUp 0.5s cubic-bezier(0.16,1,0.3,1);}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+.cnt{max-width:960px;margin:0 auto;padding:40px 24px 90px;}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 30px;margin-bottom:16px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,var(--gold3),transparent);opacity:0.3;}
+.card-eye{font-size:0.58rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--teal);margin-bottom:7px;}
+.card-ttl{font-family:'Lora',serif;font-size:1.35rem;font-weight:700;margin-bottom:6px;}
+.card-dsc{color:var(--muted2);font-size:0.83rem;line-height:1.75;margin-bottom:24px;}
+
+/* ════════ HERO WIDGET ════════ */
+.hero{background:var(--card);border:1px solid var(--border2);border-radius:26px;padding:36px 34px 32px;margin-bottom:18px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold3) 25%,var(--gold2) 50%,var(--gold3) 75%,transparent);}
+.hero::after{content:'🦉';position:absolute;right:-10px;bottom:-20px;font-size:140px;opacity:0.025;pointer-events:none;user-select:none;}
+
+.hero-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:30px;flex-wrap:wrap;gap:12px;}
+
+.exam-pills{display:flex;gap:8px;flex-wrap:wrap;}
+.ex-pill{padding:7px 18px;border-radius:999px;border:1px solid var(--border2);background:transparent;color:var(--muted2);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.74rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;transition:all 0.25s;}
+.ex-pill:hover{border-color:var(--gold);color:var(--gold);}
+.ex-pill.act{background:rgba(245,200,66,0.14);border-color:var(--gold);color:var(--gold2);box-shadow:0 0 16px rgba(245,200,66,0.15);}
+
+.live-badge{display:flex;align-items:center;gap:7px;font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--teal);}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(46,184,176,0.5);}50%{box-shadow:0 0 0 6px rgba(46,184,176,0);}}
+
+.hero-body{display:flex;gap:24px;align-items:stretch;}
+
+/* Countdown */
+.cd-wrap{flex:1;}
+.cd-blocks{display:flex;align-items:flex-end;gap:0;margin-bottom:22px;}
+.cd-block{flex:1;text-align:center;padding:20px 6px;background:linear-gradient(180deg,rgba(245,200,66,0.06),transparent);border:1px solid var(--border);border-radius:16px;margin:0 5px;}
+.cd-block:first-child{margin-left:0;}
+.cd-block:last-child{margin-right:0;}
+.cd-num{display:block;font-family:'Lora',serif;font-size:clamp(2.4rem,5vw,4rem);font-weight:700;line-height:1;background:linear-gradient(170deg,var(--gold2),var(--gold),var(--gold3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-0.02em;}
+.cd-unit{font-size:0.56rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);margin-top:8px;}
+.cd-colon{font-family:'Lora',serif;font-size:2.2rem;color:var(--gold3);opacity:0.4;margin-bottom:18px;flex-shrink:0;padding:0 2px;}
+
+.hero-meta-name{font-family:'Lora',serif;font-size:1rem;color:var(--muted2);}
+.hero-meta-date{font-size:0.72rem;color:var(--muted);}
+
+/* Widget */
+.wid{width:164px;flex-shrink:0;background:linear-gradient(160deg,#131318,#0a0a0e);border:1px solid rgba(245,200,66,0.32);border-radius:14px;padding:17px 15px 15px;position:relative;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,0.6),inset 0 1px 0 rgba(245,200,66,0.2);}
+.wid::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--gold2),transparent);}
+.wid-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.wid-name{font-family:'Lora',serif;font-size:0.9rem;font-weight:700;background:linear-gradient(135deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.wid-live{font-size:0.52rem;color:var(--teal);letter-spacing:0.08em;text-transform:uppercase;}
+.wid-num{font-family:'Lora',serif;font-size:3.2rem;font-weight:700;line-height:1;background:linear-gradient(170deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;display:block;margin-bottom:2px;}
+.wid-lbl{font-size:0.58rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:12px;}
+.wid-bar{height:2px;background:rgba(255,255,255,0.06);border-radius:999px;margin-bottom:10px;overflow:hidden;}
+.wid-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold3),var(--gold2));transition:width 1s ease;}
+.wid-info{font-size:0.6rem;color:var(--muted);text-align:center;}
+.wid-info span{color:var(--gold3);font-weight:600;}
+.wid-mantra{font-size:0.56rem;color:rgba(245,200,66,0.82);text-align:center;margin-top:8px;font-style:italic;font-family:'Lora',serif;border-top:1px solid rgba(245,200,66,0.1);padding-top:7px;line-height:1.4;}
+/* Widget daily check */
+.wid-check-row{margin-top:10px;border-top:1px solid rgba(245,200,66,0.12);padding-top:9px;}
+.wid-check-q{font-size:0.56rem;color:var(--muted2);text-align:center;margin-bottom:7px;line-height:1.4;}
+.wid-check-btns{display:flex;gap:6px;justify-content:center;}
+.wid-chk-btn{flex:1;padding:7px 4px;border:1px solid var(--border2);border-radius:8px;background:transparent;font-size:0.72rem;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:"Plus Jakarta Sans",sans-serif;}
+.wid-chk-btn.yes{color:var(--success);}
+.wid-chk-btn.yes:hover,.wid-chk-btn.yes.active{background:rgba(58,158,106,0.2);border-color:var(--success);}
+.wid-chk-btn.no{color:var(--danger);}
+.wid-chk-btn.no:hover,.wid-chk-btn.no.active{background:rgba(184,74,74,0.2);border-color:var(--danger);}
+.wid-checked{margin-top:8px;border-top:1px solid rgba(245,200,66,0.12);padding-top:8px;}
+.wid-checked-txt{font-size:0.56rem;text-align:center;line-height:1.5;font-style:italic;font-family:"Lora",serif;color:rgba(245,200,66,0.8);}
+.wid-coaching{margin-top:9px;border-top:1px solid rgba(245,200,66,0.12);padding-top:8px;text-align:center;}
+.wid-coaching-lbl{font-size:0.52rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;}
+.wid-coaching-val{font-family:"Lora",serif;font-size:0.78rem;font-weight:700;color:var(--gold2);}
+
+/* Widget - sinava yakin */
+.wid.yakin{background:linear-gradient(160deg,#1a0808,#100505);border-color:rgba(184,74,74,0.5);box-shadow:0 12px 48px rgba(0,0,0,0.6),inset 0 1px 0 rgba(184,74,74,0.3),0 0 30px rgba(184,74,74,0.1);}
+.wid.yakin::before{background:linear-gradient(90deg,transparent,#e8a0a0,transparent);}
+.wid.yakin .wid-name{background:linear-gradient(135deg,#ff8888,#e85050);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.wid.yakin .wid-num{background:linear-gradient(170deg,#ff9090,#e85050);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.wid.yakin .wid-fill{background:linear-gradient(90deg,#b84a4a,#e85050);}
+.wid.yakin .wid-mantra{color:rgba(255,150,150,0.8);border-top-color:rgba(184,74,74,0.2);}
+.wid.yakin .wid-coaching-val{color:#ff8888;}
+.wid.yakin .wid-check-q{color:#e8c0c0;}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 18px;position:relative;overflow:hidden;transition:border-color 0.3s;}
+.stat:hover{border-color:var(--border2);}
+.stat::after{content:attr(data-g);position:absolute;right:10px;bottom:6px;font-size:2.4rem;opacity:0.05;pointer-events:none;}
+.stat-v{font-family:'Lora',serif;font-size:2.4rem;font-weight:700;line-height:1;margin-bottom:5px;}
+.stat-l{font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+
+/* Today tasks */
+.sec-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;}
+.sec-ttl{font-family:'Lora',serif;font-size:1.3rem;font-weight:700;}
+.sec-sub{font-size:0.7rem;color:var(--gold3);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;}
+
+.task{display:flex;align-items:center;gap:14px;padding:14px 18px;border:1px solid var(--border);border-radius:14px;background:var(--bg2);margin-bottom:8px;cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;}
+.task::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--gold2),var(--gold3));border-radius:999px;transform:scaleY(0);transition:transform 0.25s;transform-origin:center;}
+.task:hover{border-color:var(--border2);transform:translateX(2px);}
+.task:hover::before{transform:scaleY(1);}
+.task.done{opacity:0.35;background:transparent;}
+.task.done .chk{background:var(--success);border-color:var(--success);color:white;}
+.chk{width:24px;height:24px;flex-shrink:0;border:1.5px solid var(--border2);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:0.76rem;color:transparent;transition:all 0.2s;}
+.task-info{flex:1;}
+.task-n{font-size:0.86rem;font-weight:500;margin-bottom:2px;}
+.task-s{font-size:0.7rem;color:var(--muted);}
+.task-b{font-size:0.66rem;font-weight:600;padding:3px 10px;border-radius:999px;background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.2);color:var(--gold3);white-space:nowrap;flex-shrink:0;}
+
+/* Empty */
+.empty{text-align:center;padding:48px 20px;}
+.empty-ic{font-size:2.8rem;opacity:0.3;display:block;margin-bottom:14px;}
+.empty-tx{font-size:0.86rem;color:var(--muted2);line-height:1.8;}
+.empty-ct{display:inline-block;margin-top:16px;padding:10px 22px;border-radius:999px;background:rgba(245,200,66,0.1);border:1px solid var(--border2);color:var(--gold);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.06em;}
+.empty-ct:hover{background:rgba(245,200,66,0.16);}
+
+/* Motivation */
+.mot{background:linear-gradient(135deg,rgba(46,184,176,0.07),rgba(245,200,66,0.04));border:1px solid rgba(46,184,176,0.18);border-radius:18px;padding:24px 28px;}
+.mot-tag{font-size:0.7rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--teal);margin-bottom:10px;font-weight:700;}
+.mot-q{font-family:'Lora',serif;font-size:1.05rem;font-style:italic;line-height:1.75;color:var(--text);}
+.mot-who{display:block;font-size:0.78rem;font-style:normal;color:var(--gold2);letter-spacing:0.1em;margin-top:8px;}
+
+/* Notif bar */
+.notif-b{display:flex;align-items:center;gap:14px;padding:15px 22px;border-radius:15px;margin-bottom:18px;background:rgba(245,200,66,0.06);border:1px solid var(--border2);cursor:pointer;transition:all 0.25s;}
+.notif-b:hover{background:rgba(245,200,66,0.1);border-color:var(--gold);}
+
+/* ════════ ANALIZ PAGE ════════ */
+.upload-z{border:1.5px dashed rgba(245,200,66,0.25);border-radius:20px;padding:54px 24px;text-align:center;cursor:pointer;transition:all 0.3s;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% -10%,rgba(245,200,66,0.04),transparent 65%);}
+.upload-z:hover{border-color:var(--gold);background:radial-gradient(ellipse at 50% -10%,rgba(245,200,66,0.08),transparent 65%);}
+.upload-z.has{border-color:var(--success);border-style:solid;}
+.upload-z input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-ic{width:66px;height:66px;margin:0 auto 18px;border-radius:18px;border:1px solid var(--border2);background:rgba(245,200,66,0.08);display:flex;align-items:center;justify-content:center;font-size:1.8rem;}
+.upload-ttl{font-family:'Lora',serif;font-size:1.2rem;font-weight:600;margin-bottom:6px;}
+.upload-ht{font-size:0.76rem;color:var(--muted);letter-spacing:0.04em;}
+.fp{display:none;margin-top:18px;border-radius:14px;overflow:hidden;border:1px solid var(--border);}
+.fp img{width:100%;max-height:270px;object-fit:contain;background:var(--bg);display:block;}
+
+.or-d{display:flex;align-items:center;gap:16px;margin:22px 0;color:var(--muted);font-size:0.7rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;}
+.or-d::before,.or-d::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);}
+
+.man-tog{display:flex;align-items:center;gap:10px;color:var(--gold3);font-size:0.82rem;font-weight:600;cursor:pointer;margin-bottom:16px;letter-spacing:0.04em;transition:color 0.2s;}
+.man-tog:hover{color:var(--gold);}
+
+.subj-g{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:22px;}
+.subj-r{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:border-color 0.2s;}
+.subj-r:focus-within{border-color:var(--border2);}
+.sn{flex:1;font-size:0.82rem;color:var(--muted2);}
+.ni{width:52px;background:rgba(0,0,0,0.4);border:1px solid var(--border2);border-radius:8px;color:var(--gold);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.88rem;font-weight:600;padding:5px 7px;text-align:center;transition:all 0.2s;}
+.ni:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(245,200,66,0.1);}
+.nl{font-size:0.64rem;color:var(--muted);width:20px;}
+
+/* Loading */
+.loading{display:none;text-align:center;padding:80px 20px;}
+.loading.on{display:block;animation:fadeUp 0.4s ease;}
+.load-owl{font-size:3.5rem;margin-bottom:18px;display:block;animation:float 2s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.load-ttl{font-family:'Lora',serif;font-size:1.6rem;font-weight:700;margin-bottom:6px;background:linear-gradient(135deg,var(--gold2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.load-st{font-size:0.62rem;letter-spacing:0.2em;color:var(--teal);text-transform:uppercase;margin-bottom:40px;opacity:0.75;}
+.spin{width:48px;height:48px;border:2px solid rgba(245,200,66,0.12);border-top-color:var(--gold);border-radius:50%;margin:0 auto 34px;animation:spin 0.9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.load-steps{list-style:none;max-width:250px;margin:0 auto;text-align:left;}
+.load-steps li{padding:9px 0;display:flex;align-items:center;gap:12px;font-size:0.8rem;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.04);}
+.load-steps li:last-child{border:none;}
+.load-steps li.act{color:var(--text);}
+.load-steps li.fin{color:var(--success);}
+.ld{width:5px;height:5px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background 0.3s;}
+.act .ld{background:var(--gold);box-shadow:0 0 8px rgba(245,200,66,0.6);}
+.fin .ld{background:var(--success);}
+
+/* Results */
+.res{display:none;}
+.res.on{display:block;animation:fadeUp 0.5s ease;}
+
+.score-g{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.sc-tile{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 14px;text-align:center;position:relative;overflow:hidden;}
+.sc-tile::before{content:'';position:absolute;top:0;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,var(--gold3),transparent);opacity:0.45;}
+.sc-v{font-family:'Lora',serif;font-size:1.9rem;font-weight:700;margin-bottom:4px;}
+.sc-l{font-size:0.62rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;}
+
+/* Topics */
+.t3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;}
+.tc{padding:10px 12px;border-radius:10px;font-size:0.76rem;font-weight:500;border:1px solid;display:flex;align-items:flex-start;gap:6px;line-height:1.4;}
+.tc.urg{background:rgba(184,74,74,0.08);border-color:rgba(184,74,74,0.25);color:#e8a0a0;}
+.tc.med{background:rgba(192,144,48,0.08);border-color:rgba(192,144,48,0.25);color:#e8c878;}
+.tc.goo{background:rgba(58,158,106,0.08);border-color:rgba(58,158,106,0.25);color:#90d0a0;}
+
+/* Kaynak chips */
+.res-section-ttl{font-family:'Lora',serif;font-size:1rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.kaynak-g{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.kaynak-chip{padding:8px 14px;border-radius:10px;font-size:0.76rem;font-weight:600;border:1px solid;display:flex;align-items:center;gap:6px;}
+.k-bsl{background:rgba(58,158,106,0.08);border-color:rgba(58,158,106,0.25);color:#90d0a0;}
+.k-ort{background:rgba(192,144,48,0.08);border-color:rgba(192,144,48,0.25);color:#e8c878;}
+.k-ilr{background:rgba(184,74,74,0.08);border-color:rgba(184,74,74,0.25);color:#e8a0a0;}
+
+/* Kariyer card */
+.kariyer-card{background:linear-gradient(135deg,rgba(245,200,66,0.06),rgba(46,184,176,0.04));border:1px solid rgba(245,200,66,0.2);border-radius:18px;padding:24px 26px;margin-bottom:16px;}
+.kariyer-top{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.kariyer-meslek{font-family:'Lora',serif;font-size:1.2rem;font-weight:700;}
+.kar-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.kar-side{padding:14px 16px;border-radius:13px;}
+.kar-ayd{background:rgba(58,158,106,0.08);border:1px solid rgba(58,158,106,0.2);}
+.kar-glg{background:rgba(184,74,74,0.08);border:1px solid rgba(184,74,74,0.2);}
+.kar-side-ttl{font-size:0.62rem;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;margin-bottom:8px;}
+.kar-ayd .kar-side-ttl{color:#90d0a0;}
+.kar-glg .kar-side-ttl{color:#e8a0a0;}
+.kar-side-body{font-size:0.8rem;line-height:1.65;color:var(--muted2);}
+.uyum-bar-wrap{margin-bottom:4px;}
+.uyum-lbl{font-size:0.7rem;color:var(--muted2);margin-bottom:6px;}
+.uyum-bar{height:6px;background:rgba(255,255,255,0.07);border-radius:999px;overflow:hidden;}
+.uyum-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold3),var(--gold));transition:width 1.2s ease;}
+
+/* Day plan */
+.day-c{background:var(--card);border:1px solid var(--border);border-radius:15px;margin-bottom:10px;overflow:hidden;transition:border-color 0.25s;}
+.day-c:hover{border-color:var(--border2);}
+.day-h{padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:linear-gradient(90deg,rgba(245,200,66,0.06),transparent);}
+.day-nb{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--gold3),var(--gold));display:flex;align-items:center;justify-content:center;font-size:0.68rem;font-weight:700;color:#08080a;flex-shrink:0;}
+.day-nm{font-family:'Lora',serif;font-size:0.95rem;font-weight:600;}
+.day-b{padding:12px 20px;}
+.plan-r{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.03);font-size:0.8rem;}
+.plan-r:last-child{border:none;}
+.ps{background:rgba(245,200,66,0.1);color:var(--gold3);border-radius:5px;padding:2px 9px;font-size:0.68rem;font-weight:600;white-space:nowrap;flex-shrink:0;}
+.pd{color:var(--muted2);flex:1;line-height:1.5;}
+.pa{color:var(--muted);font-size:0.7rem;flex-shrink:0;margin-left:auto;}
+
+/* Coach note */
+.coach-note{background:linear-gradient(135deg,rgba(46,184,176,0.07),rgba(245,200,66,0.04));border:1px solid rgba(46,184,176,0.2);border-radius:18px;padding:24px 28px;margin-bottom:16px;}
+.cn-lbl{font-size:0.6rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
+.cn-txt{font-family:'Lora',serif;font-size:1rem;font-style:italic;line-height:1.85;color:var(--text);}
+.cursor{display:inline-block;width:2px;height:0.9em;background:var(--gold);margin-left:2px;animation:blink 0.8s infinite;vertical-align:middle;}
+@keyframes blink{50%{opacity:0;}}
+
+/* ════════ SETTINGS ════════ */
+.set-i{display:flex;align-items:center;gap:16px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+.set-i:last-child{border:none;}
+.set-ic{width:40px;height:40px;border-radius:12px;flex-shrink:0;background:rgba(245,200,66,0.07);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.set-inf{flex:1;}
+.set-nm{font-size:0.88rem;font-weight:500;margin-bottom:2px;}
+.set-ht{font-size:0.72rem;color:var(--muted);}
+.tog{width:46px;height:26px;border-radius:999px;background:rgba(255,255,255,0.07);border:1px solid var(--border);position:relative;cursor:pointer;transition:all 0.35s;flex-shrink:0;}
+.tog.on{background:linear-gradient(135deg,var(--gold3),var(--gold));border-color:var(--gold);box-shadow:0 0 12px rgba(245,200,66,0.3);}
+.tog::after{content:'';position:absolute;width:18px;height:18px;background:rgba(255,255,255,0.4);border-radius:50%;top:3px;left:3px;transition:all 0.35s;box-shadow:0 2px 4px rgba(0,0,0,0.4);}
+.tog.on::after{background:white;transform:translateX(20px);}
+.t-inp{background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--gold);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.88rem;font-weight:600;padding:8px 12px;width:108px;text-align:center;}
+.t-inp:focus{outline:none;border-color:var(--gold);}
+.d-inp{background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:0.78rem;padding:8px 12px;width:146px;}
+.d-inp:focus{outline:none;border-color:var(--gold);}
+.toasty{display:none;text-align:center;padding:12px;color:var(--success);font-size:0.78rem;letter-spacing:0.08em;animation:fadeUp 0.3s ease;}
+
+/* Responsive */
+@media(max-width:700px){
+  .score-g{grid-template-columns:repeat(2,1fr);}
+  .t3{grid-template-columns:repeat(2,1fr);}
+  .subj-g{grid-template-columns:1fr;}
+  .stats{grid-template-columns:repeat(3,1fr);}
+  .hero-body{flex-direction:column;}
+  .wid{width:100%;flex-direction:row;}
+  .cd-num{font-size:2rem;}
+  .cnt{padding:26px 16px 80px;}
+  .nav{padding:0 16px;}
+  .kar-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="a1 amb"></div>
+<div class="a2 amb"></div>
+
+<!-- ══════════════════════════════════
+     ONBOARDING
+══════════════════════════════════ -->
+<div id="ob">
+
+<div class="ob-hero">
+  <div class="owl-wrap">
+    <div class="owl-bg">
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+        <defs>
+          <linearGradient id="og" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#ffd84d"/>
+            <stop offset="50%" stop-color="#f5c842"/>
+            <stop offset="100%" stop-color="#b8962e"/>
+          </linearGradient>
+        </defs>
+        <!-- Owl body -->
+        <ellipse cx="22" cy="26" rx="13" ry="14" fill="url(#og)" opacity="0.15"/>
+        <!-- Ears -->
+        <path d="M13 16 L16 9 L19 16" fill="url(#og)" opacity="0.7"/>
+        <path d="M25 16 L28 9 L31 16" fill="url(#og)" opacity="0.7"/>
+        <!-- Face circle -->
+        <ellipse cx="22" cy="23" rx="11" ry="11" stroke="url(#og)" stroke-width="1.5" fill="none" opacity="0.5"/>
+        <!-- Eyes -->
+        <circle cx="17.5" cy="21" r="4" fill="url(#og)" opacity="0.9"/>
+        <circle cx="26.5" cy="21" r="4" fill="url(#og)" opacity="0.9"/>
+        <circle cx="17.5" cy="21" r="1.8" fill="#08080a"/>
+        <circle cx="26.5" cy="21" r="1.8" fill="#08080a"/>
+        <circle cx="18.5" cy="20" r="0.7" fill="white" opacity="0.8"/>
+        <circle cx="27.5" cy="20" r="0.7" fill="white" opacity="0.8"/>
+        <!-- Beak -->
+        <path d="M20 25 L22 28 L24 25" fill="url(#og)" opacity="0.7"/>
+        <!-- Wings -->
+        <path d="M11 28 Q8 22 11 18" stroke="url(#og)" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+        <path d="M33 28 Q36 22 33 18" stroke="url(#og)" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+      </svg>
+    </div>
+  </div>
+  <span class="ob-title"><span class="koc">Koç</span><span class="ai">AI</span></span>
+  <span class="ob-sub">Akıllı Sınav Koçun</span>
+  <p class="ob-slogan"><em>Netlerini Çek,</em> Geleceğini Planla.</p>
+</div>
+
+<!-- Steps -->
+<div class="ob-steps">
+  <div class="os-item"><div class="os-dot act" id="sd1">1</div><span class="os-lbl act" id="sl1">Profil</span></div>
+  <div class="os-line" id="sl1-2"></div>
+  <div class="os-item"><div class="os-dot" id="sd2">2</div><span class="os-lbl" id="sl2">Sınav</span></div>
+  <div class="os-line" id="sl2-3"></div>
+  <div class="os-item"><div class="os-dot" id="sd3">3</div><span class="os-lbl" id="sl3">Hedef</span></div>
+  <div class="os-line" id="sl3-4"></div>
+  <div class="os-item"><div class="os-dot" id="sd4">4</div><span class="os-lbl" id="sl4">Mizaç</span></div>
+  <div class="os-line" id="sl4-5"></div>
+  <div class="os-item"><div class="os-dot" id="sd5">5</div><span class="os-lbl" id="sl5">Hazır</span></div>
+</div>
+
+<!-- STEP 1: Profile -->
+<div class="ob-card act" id="obs1">
+  <div class="ob-ct"><span>🧑‍🎓</span> Merhaba, ben KoçAI!</div>
+  <div class="ob-cd">Sana özel bir yol haritası çizebilmem için seni tanımam lazım. Başlayalım mı?</div>
+  <label class="fl">Ad Soyad</label>
+  <input class="ob-inp" id="obN" type="text" placeholder="Adın ve soyadın" oninput="chk1()"/>
+  <label class="fl">Sınıf / Durum</label>
+  <select class="ob-sel" id="obC" onchange="chk1();toggleOkul()">
+    <option value="">Seç...</option>
+    <option value="9">9. Sınıf</option>
+    <option value="10">10. Sınıf</option>
+    <option value="11">11. Sınıf</option>
+    <option value="12">12. Sınıf</option>
+    <option value="mezun">Mezun (Tekrar)</option>
+    <option value="8">8. Sınıf (LGS)</option>
+    <option value="kpss">Mezun (KPSS)</option>
+  </select>
+
+  <div id="okulArea" style="display:none;">
+    <label class="fl">Okul Saatlerin</label>
+    <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center;">
+      <div style="flex:1;">
+        <div style="font-size:0.7rem;color:var(--muted);margin-bottom:6px;">Giriş</div>
+        <input type="time" class="ob-inp" id="okulGiris" value="07:30" style="margin-bottom:0;"/>
+      </div>
+      <div style="color:var(--muted);margin-top:16px;">→</div>
+      <div style="flex:1;">
+        <div style="font-size:0.7rem;color:var(--muted);margin-bottom:6px;">Çıkış</div>
+        <input type="time" class="ob-inp" id="okulCikis" value="15:30" style="margin-bottom:0;"/>
+      </div>
+    </div>
+  </div>
+  <label class="fl">Günlük Çalışma Süresi</label>
+  <div class="hrs">
+    <button type="button" class="hr-pill" onclick="selH(this,'2')">2 saat</button>
+    <button type="button" class="hr-pill" onclick="selH(this,'4')">4 saat</button>
+    <button type="button" class="hr-pill" onclick="selH(this,'6')">6 saat</button>
+    <button type="button" class="hr-pill" onclick="selH(this,'8')">8 saat</button>
+    <button type="button" class="hr-pill" onclick="selH(this,'10')">10 saat</button>
+    <button type="button" class="hr-pill" onclick="selH(this,'12+')">12+ saat</button>
+  </div>
+  <button type="button" class="btn-gold" id="bn1" onclick="obGo(2)">Devam Et →</button>
+</div>
+
+<!-- STEP 2: Exam -->
+<div class="ob-card" id="obs2">
+  <div class="ob-ct"><span>🎯</span> Sınav Türü</div>
+  <div class="ob-cd">Hangi sınava hazırlanıyorsun? Her sınavın kendi dünyası var.</div>
+  <div class="exam-grid">
+    <button type="button" class="exam-btn" onclick="selEx(this,'YKS')" id="etYKS"><span class="eb-name">YKS</span><span class="eb-sub">TYT + AYT</span></button>
+    <button type="button" class="exam-btn" onclick="selEx(this,'LGS')" id="etLGS"><span class="eb-name">LGS</span><span class="eb-sub">8. Sınıf</span></button>
+    <button type="button" class="exam-btn" onclick="selEx(this,'KPSS')" id="etKPSS"><span class="eb-name">KPSS</span><span class="eb-sub">Kamu</span></button>
+  </div>
+  <label class="fl">Hedef Alan</label>
+  <select class="ob-sel" id="obF">
+    <option value="">Seç...</option>
+    <option value="sayisal">Sayısal (MF)</option>
+    <option value="sozel">Sözel (TS)</option>
+    <option value="esit">Eşit Ağırlık (EA)</option>
+    <option value="dil">Dil (YDİ/YDF/YDA)</option>
+    <option value="tyt">Sadece TYT</option>
+    <option value="lisans">KPSS Lisans</option>
+    <option value="onlisans">KPSS Önlisans</option>
+    <option value="lgs">LGS Genel</option>
+  </select>
+  <button type="button" class="btn-gold" onclick="obGo(3)">Devam Et →</button>
+  <button type="button" class="btn-ghost" onclick="obGo(1)">← Geri</button>
+</div>
+
+<!-- STEP 3: Target -->
+<div class="ob-card" id="obs3">
+  <div class="ob-ct"><span>🏛️</span> Hedefin</div>
+  <div class="ob-cd">Hayal ettiğin meslek ve üniversiteyi yaz. KoçAI bu hedefle seni tanıyacak.</div>
+
+  <label class="fl">Hedef Meslek / Bölüm</label>
+  <div class="ac-wrap" id="meslekAc">
+    <input class="ac-inp" id="obM" type="text" placeholder="örn. Yazılım Mühendisi, Avukat, Öğretmen..." oninput="acFilter('meslekAc','obM',MESLEKLER)" autocomplete="off"/>
+    <div class="ac-list" id="meslekAc-list"></div>
+  </div>
+
+  <label class="fl">Hedef Üniversite</label>
+  <div class="ac-wrap" id="univAc">
+    <input class="ac-inp" id="obU" type="text" placeholder="örn. ODTÜ, Boğaziçi, İTÜ..." oninput="acFilter('univAc','obU',UNIVS)" autocomplete="off"/>
+    <div class="ac-list" id="univAc-list"></div>
+  </div>
+
+  <button type="button" class="btn-gold" onclick="obGo(4)">Devam Et →</button>
+  <button type="button" class="btn-ghost" onclick="obGo(2)">← Geri</button>
+</div>
+
+<!-- STEP 4: Mizaç -->
+<div class="ob-card" id="obs4">
+  <div class="ob-ct"><span>🧠</span> Mizaç Analizi</div>
+  <div class="ob-cd">12 soru. Cevapların hem seni tanımama hem de hedef mesleğinle uyumunu analiz etmeme yardımcı olacak.</div>
+  <div class="miz-progress"><div class="miz-fill" id="mizBar" style="width:0%"></div></div>
+  <div class="miz-counter" id="mizCnt">Soru 1 / 12</div>
+  <div id="mizQArea"></div>
+  <button type="button" class="btn-gold" id="mizNext" onclick="nextMiz()" disabled>Sonraki →</button>
+  <button type="button" class="btn-ghost" id="mizBack" onclick="prevMiz()">← Geri</button>
+</div>
+
+<!-- STEP 5: Ready -->
+<div class="ob-card" id="obs5">
+  <div class="ob-ct"><span>🦉</span> Rotana Hazırım!</div>
+  <div class="ob-cd">Verilerini işledim. Sana özel bir yol haritası hazır.</div>
+  <div class="sum-box"><div class="sum-row" id="obSum"></div></div>
+  <div class="prof-badge"><div class="pb-label">✦ Mizaç Profilin</div><div class="pb-text" id="mizProfile"></div></div>
+  <button type="button" class="btn-gold" onclick="obFinish()">🚀 KoçAI'yı Başlat</button>
+  <button type="button" class="btn-ghost" onclick="obGo(4)">← Geri</button>
+</div>
+
+</div><!-- /ob -->
+
+<!-- ══════════════════════════════════
+     MAIN APP
+══════════════════════════════════ -->
+<div id="app" style="display:none;">
+
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-owl">🦉</div>
+    <div>
+      <div class="nav-name"><span class="k">Koç</span><span class="ai">AI</span></div>
+      <div class="nav-sub">Akıllı Sınav Koçun</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab act" onclick="goP('dash',this)">Panel</button>
+    <button class="nav-tab" onclick="goP('analiz',this)">Analiz</button>
+    <button class="nav-tab" onclick="goP('ayar',this)">Ayarlar</button>
+  </div>
+</nav>
+
+<!-- ── DASHBOARD ── -->
+<div class="page act" id="p-dash">
+<div class="cnt">
+
+  <!-- PWA Kur Butonu -->
+  <div id="pwaBtn" style="display:none;align-items:center;gap:14px;padding:15px 22px;border-radius:15px;margin-bottom:18px;background:linear-gradient(135deg,rgba(245,200,66,0.12),rgba(46,184,176,0.08));border:1px solid var(--gold);cursor:pointer;transition:all 0.25s;" onclick="installPWA()">
+    <span style="font-size:1.4rem;">📱</span>
+    <div style="flex:1;">
+      <div style="font-weight:700;font-size:0.86rem;margin-bottom:2px;color:var(--gold);">Uygulamayı Telefona Kur!</div>
+      <div style="font-size:0.73rem;color:var(--muted2);">Ana ekrana ekle — uygulama gibi kullan</div>
+    </div>
+    <span style="color:var(--gold);font-size:1.2rem;">⬇</span>
+  </div>
+
+  <div id="yakinBanner" style="display:none;background:linear-gradient(135deg,rgba(184,74,74,0.15),rgba(192,144,48,0.1));border:1px solid rgba(184,74,74,0.4);border-radius:15px;padding:16px 22px;margin-bottom:18px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:1.6rem;">🚨</span>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:0.9rem;color:#e8a0a0;margin-bottom:4px;">Sınava Yakın Mod Aktif!</div>
+        <div style="font-size:0.78rem;color:var(--muted2);" id="yakinText">Sınava az kaldı — Sabah TYT, Akşam AYT deneme zamanı!</div>
+      </div>
+      <div style="font-family:'Lora',serif;font-size:1.8rem;font-weight:700;color:#e8a0a0;" id="yakinGun">—</div>
+    </div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div style="background:rgba(184,74,74,0.1);border:1px solid rgba(184,74,74,0.25);border-radius:10px;padding:10px 14px;">
+        <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#e8a0a0;margin-bottom:4px;">☀️ SABAH</div>
+        <div style="font-size:0.82rem;color:var(--text);">TYT Tam Deneme</div>
+        <div style="font-size:0.72rem;color:var(--muted);">09:00 — 135 soru</div>
+      </div>
+      <div style="background:rgba(192,144,48,0.1);border:1px solid rgba(192,144,48,0.25);border-radius:10px;padding:10px 14px;">
+        <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#e8c878;margin-bottom:4px;">🌆 ÖĞLEDEN SONRA</div>
+        <div style="font-size:0.82rem;color:var(--text);">AYT + Hata Analizi</div>
+        <div style="font-size:0.72rem;color:var(--muted);">14:00 — Eksik konular</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notif-b" onclick="reqNotif()">
+    <span style="font-size:1.4rem;">🔔</span>
+    <div style="flex:1;">
+      <div style="font-weight:600;font-size:0.86rem;margin-bottom:2px;">Günlük Hatırlatmayı Aç</div>
+      <div style="font-size:0.73rem;color:var(--muted2);">Her gün çalışma saatinde bildirim gelsin</div>
+    </div>
+    <span style="color:var(--gold);font-size:1.2rem;">›</span>
+  </div>
+
+  <!-- Hero countdown -->
+  <div class="hero">
+    <div class="hero-top">
+      <div class="exam-pills">
+        <button class="ex-pill act" onclick="setEx('TYT/AYT',this)">TYT / AYT</button>
+        <button class="ex-pill" onclick="setEx('LGS',this)">LGS</button>
+        <button class="ex-pill" onclick="setEx('KPSS',this)">KPSS</button>
+      </div>
+      <div class="live-badge"><div class="live-dot"></div>Canlı</div>
+    </div>
+    <div class="hero-body">
+      <div class="cd-wrap">
+        <div class="cd-blocks">
+          <div class="cd-block"><span class="cd-num" id="cdG">—</span><div class="cd-unit">Gün</div></div>
+          <div class="cd-colon">:</div>
+          <div class="cd-block"><span class="cd-num" id="cdS">—</span><div class="cd-unit">Saat</div></div>
+          <div class="cd-colon">:</div>
+          <div class="cd-block"><span class="cd-num" id="cdD">—</span><div class="cd-unit">Dakika</div></div>
+          <div class="cd-colon">:</div>
+          <div class="cd-block"><span class="cd-num" id="cdN">—</span><div class="cd-unit">Saniye</div></div>
+        </div>
+        <div class="hero-meta-name" id="exNm">TYT / AYT Sınavı</div>
+        <div class="hero-meta-date" id="exDt"></div>
+      </div>
+      <div class="wid">
+        <div class="wid-top"><div class="wid-name">KoçAI</div><div class="wid-live">● Canlı</div></div>
+        <span class="wid-num" id="wD">—</span>
+        <div class="wid-lbl">Gün Kaldı</div>
+        <div class="wid-bar"><div class="wid-fill" id="wB" style="width:0%"></div></div>
+        <div class="wid-info"><span id="wE">TYT</span> · <span id="wDt">—</span></div>
+        <div class="wid-check-row" id="widCheckRow">
+          <div class="wid-check-q" id="widCheckQ">Bugün sorularını<br>çözdün mü?</div>
+          <div class="wid-check-btns">
+            <button type="button" class="wid-chk-btn yes" id="wChkYes" onclick="widCheck('evet')">✓</button>
+            <button type="button" class="wid-chk-btn no" id="wChkNo" onclick="widCheck('hayir')">✗</button>
+          </div>
+        </div>
+        <div class="wid-checked" id="widChecked" style="display:none;">
+          <div class="wid-checked-txt" id="widCheckedTxt"></div>
+        </div>
+        <div class="wid-mantra" id="wM"></div>
+        <div class="wid-coaching">
+          <div class="wid-coaching-lbl">📅 Sonraki Koçluk</div>
+          <div class="wid-coaching-val" id="wCoach">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat" data-g="🔥"><div class="stat-v" id="stS" style="color:var(--gold)">0🔥</div><div class="stat-l">Gün Serisi</div></div>
+    <div class="stat" data-g="✅"><div class="stat-v" id="stD" style="color:var(--success)">0</div><div class="stat-l">Tamamlanan</div></div>
+    <div class="stat" data-g="📊"><div class="stat-v" id="stW" style="color:var(--teal)">0</div><div class="stat-l">Bu Haftaki Gün</div></div>
+  </div>
+
+  <!-- Today -->
+  <div class="card">
+    <div class="sec-row">
+      <div class="sec-ttl">Bugünün Planı</div>
+      <div class="sec-sub" id="todayLbl"></div>
+    </div>
+    <div id="todayTasks">
+      <div class="empty">
+        <span class="empty-ic">🧭</span>
+        <div class="empty-tx">Henüz plan oluşturulmadı.<br>Deneme fotoğrafını yükleyerek başla.</div>
+        <div class="empty-ct" onclick="goP('analiz',document.querySelectorAll('.nav-tab')[1])">Analiz Et →</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Motivation -->
+  <div class="mot">
+    <div class="mot-tag" id="motTag">✦ Günün Mantras</div>
+    <div class="mot-q" id="motQ">...</div>
+    <span class="mot-who" id="motWho"></span>
+  </div>
+
+  <!-- Haftalık Özet -->
+  <div class="card" id="haftalikOzetCard" style="display:none;">
+    <div class="card-eye">Haftalık Özet</div>
+    <div class="card-ttl" style="font-size:1.1rem;margin-bottom:16px;">📊 Net Gelişimin</div>
+    <div id="haftalikOzetContent"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ── ANALİZ ── -->
+<div class="page" id="p-analiz">
+<div class="cnt">
+
+  <div id="upForm">
+    <div class="card">
+      <div class="card-eye">Adım 01 — Veri</div>
+      <div class="card-ttl">Deneme Karnesini Yükle</div>
+      <div class="card-dsc">Fotoğraf çek ya da ekran görüntüsü yükle. KoçAI netleri okur, kariyer analizini yapar ve kaynak önerir.</div>
+      <div class="upload-z" id="uz">
+        <input type="file" accept="image/*" id="fi" onchange="onFile(event)"/>
+        <div class="upload-ic">📷</div>
+        <div class="upload-ttl">Fotoğraf Yükle</div>
+        <div class="upload-ht">TYT · AYT · LGS · KPSS — Her format çalışır</div>
+      </div>
+      <div class="fp" id="fp"><img id="fpI" src="" alt=""/></div>
+      <div class="or-d">veya</div>
+      <div class="man-tog" onclick="togMan()"><span id="mArr">▸</span> Net bilgilerini elle gir</div>
+      <div id="photoHint" style="display:none;font-size:0.75rem;color:var(--warn);padding:8px 12px;background:rgba(192,144,48,0.1);border-radius:8px;margin-bottom:8px;">📸 Fotoğraf yüklendi! Şimdi aşağıdan netlerini de gir → Analiz yapılacak.</div>
+      <div id="manArea" style="display:none;"><div class="subj-g" id="sGrid"></div></div>
+      <button type="button" class="btn-gold" id="startB" onclick="startAn()" disabled>🦉 KoçAI Analiz Yapsın</button>
+    </div>
+  </div>
+
+  <div class="loading" id="loadArea">
+    <span class="load-owl">🦉</span>
+    <div class="load-ttl">KoçAI Çalışıyor...</div>
+    <div class="load-st">Netlerini Çek, Geleceğini Planla</div>
+    <div class="spin"></div>
+    <ul class="load-steps">
+      <li id="ls1"><div class="ld"></div>Karne okunuyor...</li>
+      <li id="ls2"><div class="ld"></div>Net analizi yapılıyor...</li>
+      <li id="ls3"><div class="ld"></div>Kariyer uyumu hesaplanıyor...</li>
+      <li id="ls4"><div class="ld"></div>Kaynak seviyelendiriliyor...</li>
+      <li id="ls5"><div class="ld"></div>Haftalık rota oluşturuluyor...</li>
+    </ul>
+  </div>
+
+  <div class="res" id="resArea">
+    <div class="score-g" id="scG"></div>
+
+    <!-- Kariyer Analizi -->
+    <div class="kariyer-card" id="kariyerCard"></div>
+
+    <!-- Konu Öncelikleri -->
+    <div class="card">
+      <div class="card-eye">Konu Haritası</div>
+      <div class="card-ttl" style="font-size:1.1rem;margin-bottom:14px;">Öncelik Analizi</div>
+      <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--danger);margin-bottom:8px;">⬤ Acil Çalış</div>
+      <div class="t3" id="urgT"></div>
+      <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--warn);margin-bottom:8px;margin-top:14px;">⬤ Pekiştir</div>
+      <div class="t3" id="medT"></div>
+      <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--success);margin-bottom:8px;margin-top:14px;">⬤ Güçlü</div>
+      <div class="t3" id="gooT"></div>
+    </div>
+
+    <!-- Kaynak Önerileri -->
+    <div class="card">
+      <div class="card-eye">Kaynak Rehberi</div>
+      <div class="card-ttl" style="font-size:1.1rem;margin-bottom:14px;">Seviyene Göre Kaynaklar</div>
+      <div id="kaynakArea"></div>
+    </div>
+
+    <!-- Haftalık Plan -->
+    <div class="card">
+      <div class="card-eye">Haftalık Program</div>
+      <div class="card-ttl" style="font-size:1.1rem;margin-bottom:16px;">7 Günlük Rota</div>
+      <div id="weekP"></div>
+    </div>
+
+    <!-- Coach Note -->
+    <div class="coach-note">
+      <div class="cn-lbl">🦉 KoçAI'ın Sana Notu</div>
+      <div class="cn-txt" id="cnTxt"></div>
+    </div>
+
+    <button type="button" class="btn-ghost" onclick="resetAn()">↩ Yeni Analiz</button>
+  </div>
+
+</div>
+</div>
+
+<!-- ── AYARLAR ── -->
+<div class="page" id="p-ayar">
+<div class="cnt">
+
+  <div class="card">
+    <div class="card-eye">Görünüm</div>
+    <div class="card-ttl" style="font-size:1.1rem;margin-bottom:6px;">Tema Seç</div>
+    <div class="card-dsc">KoçAI'ın rengini değiştir.</div>
+    <div class="theme-switcher">
+      <button class="theme-btn act" data-theme="default" data-name="Altın" style="background:linear-gradient(135deg,#f5c842,#b8962e);" onclick="setTheme('default',this)"></button>
+      <button class="theme-btn" data-theme="safir" data-name="Safir" style="background:linear-gradient(135deg,#5090ff,#3060cc);" onclick="setTheme('safir',this)"></button>
+      <button class="theme-btn" data-theme="orman" data-name="Orman" style="background:linear-gradient(135deg,#40c060,#208040);" onclick="setTheme('orman',this)"></button>
+      <button class="theme-btn" data-theme="safak" data-name="Şafak" style="background:linear-gradient(135deg,#c060ff,#8040cc);" onclick="setTheme('safak',this)"></button>
+      <button class="theme-btn" data-theme="aydinlik" data-name="Aydınlık" style="background:linear-gradient(135deg,#f5f0e0,#d4a840);border:1px solid #ccc;" onclick="setTheme('aydinlik',this)"></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-ttl" style="font-size:1.1rem;margin-bottom:6px;">Hatırlatma Ayarları</div>
+    <div class="card-dsc">Her gün çalışma saatinde bildirim al.</div>
+    <div class="set-i"><div class="set-ic">🔔</div><div class="set-inf"><div class="set-nm">Günlük Hatırlatma</div><div class="set-ht">Çalışma zamanı bildirimi</div></div><div class="tog" id="togN" onclick="togS('notif')"></div></div>
+    <div class="set-i"><div class="set-ic">🕐</div><div class="set-inf"><div class="set-nm">Hatırlatma Saati</div><div class="set-ht">Bu saatte bildirim gel</div></div><input type="time" class="t-inp" id="tTime" value="18:00"/></div>
+    <div class="set-i"><div class="set-ic">📅</div><div class="set-inf"><div class="set-nm">Haftalık Özet</div><div class="set-ht">Her Pazar analiz raporu</div></div><div class="tog on" id="togW" onclick="togS('weekly')"></div></div>
+    <div class="set-i"><div class="set-ic">🔥</div><div class="set-inf"><div class="set-nm">Seri Uyarısı</div><div class="set-ht">Gün serini kaybetmek üzereyken uyar</div></div><div class="tog on" id="togSt" onclick="togS('streak')"></div></div>
+    <button type="button" class="btn-gold" style="margin-top:10px;" onclick="saveSet()">Kaydet</button>
+    <div class="toasty" id="toasty">✦ Ayarlar kaydedildi</div>
+  </div>
+
+  <div class="card">
+    <div class="card-eye">Geri Sayım</div>
+    <div class="card-ttl" style="font-size:1.1rem;margin-bottom:6px;">Sınav Tarihleri</div>
+    <div class="card-dsc">Kendi tarihlerini girerek geri sayımı kişiselleştir.</div>
+    <div class="set-i"><div class="set-ic">📘</div><div class="set-inf"><div class="set-nm">TYT / AYT</div></div><input type="date" class="d-inp" id="dTYT"/></div>
+    <div class="set-i"><div class="set-ic">📗</div><div class="set-inf"><div class="set-nm">LGS</div></div><input type="date" class="d-inp" id="dLGS"/></div>
+    <div class="set-i"><div class="set-ic">📙</div><div class="set-inf"><div class="set-nm">KPSS</div></div><input type="date" class="d-inp" id="dKPSS"/></div>
+    <div class="set-i"><div class="set-ic">🦉</div><div class="set-inf"><div class="set-nm">Sonraki Koçluk Tarihi</div><div class="set-ht">Widget'ta geri sayım yapar</div></div><input type="date" class="d-inp" id="dCoach"/></div>
+    <button type="button" class="btn-gold" style="margin-top:10px;" onclick="saveDates()">Tarihleri Kaydet</button>
+  </div>
+
+  <div class="card">
+    <div class="card-eye">Profil</div>
+    <div class="card-ttl" style="font-size:1.1rem;margin-bottom:16px;">Hesap</div>
+    <button type="button" class="btn-ghost" onclick="clearHistory()" style="color:var(--warn);border-color:rgba(192,144,48,0.3);margin-bottom:10px;">Geçmiş Net Verilerini Temizle</button>
+    <button type="button" class="btn-ghost" onclick="resetApp()" style="color:var(--danger);border-color:rgba(184,74,74,0.3);">Profili Sıfırla & Yeniden Başla</button>
+  </div>
+
+</div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ── WIDGET CHECK ──
+const WID_EVET = [
+  "Harika! 🦉 Seri devam ediyor, aferin!",
+  "Bravo! Her çözülen soru seni hedefe yaklaştırıyor.",
+  "Mükemmel! Tutarlılık başarının yarısı.",
+  "Süpersin! Bugün de rotada kaldın 🎯",
+  "Devam et! En güzel gemi fırtınada test edilir.",
+  "Harika iş! Bugün ekmeğini taşın altına koydun 💪",
+  "Tam gaz! Bu tempo seni üst sıralara taşır.",
+];
+const WID_HAYIR = [
+  "Sorun değil, henüz vakit var. Hadi şimdi başla! ⏰",
+  "Geç kalmak hiç başlamamaktan iyidir. 5 soru bile olsa çöz.",
+  "Yarın telafi edersin ama bugün bitti deme — gece var hâlâ!",
+  "Kaptanlar fırtınada pes etmez. Küçük bir başlangıç yap! 🚢",
+  "Rakiplerin şu an çalışıyor. Sen ne yapıyorsun? 👀",
+];
+
+// Dönen widget soruları — her gün farklı, her açılışta değişir
+const WID_SORULAR = [
+  {s:"Bugün sorularını\nçözdün mü?",          tip:"soru"},
+  {s:"Karnen hazır mı?\nBu hafta analiz yaptın mı?", tip:"karne"},
+  {s:"Bugün kaç net\nyaptın?",                 tip:"net"},
+  {s:"En zayıf konuna\nbaktın mı?",            tip:"konu"},
+  {s:"Deneme sınavın\nbu hafta var mı?",       tip:"deneme"},
+  {s:"Hata analizini\nyaptın mı?",             tip:"analiz"},
+  {s:"Bugün YouTube\nders izledin mi?",        tip:"video"},
+  {s:"Motivasyonun\nnasıl bugün?",             tip:"motivasyon"},
+];
+
+function getWidSoru() {
+  const gun = new Date().getDay();
+  const saat = new Date().getHours();
+  const idx = (gun * 3 + Math.floor(saat / 8)) % WID_SORULAR.length;
+  return WID_SORULAR[idx];
+}
+
+function initWidSoru() {
+  const ws = getWidSoru();
+  const el = document.getElementById('widCheckQ');
+  if(el) el.innerHTML = ws.s.replace('\n','<br>');
+}
+
+function widCheck(ans) {
+  const today = new Date().toDateString();
+  LS.set('k_wcheck_date', today);
+  LS.set('k_wcheck_ans', ans);
+  const msgs = ans === 'evet' ? WID_EVET : WID_HAYIR;
+  const msg = msgs[Math.floor(Math.random() * msgs.length)];
+  document.getElementById('widCheckRow').style.display = 'none';
+  document.getElementById('widChecked').style.display = 'block';
+  document.getElementById('widCheckedTxt').textContent = msg;
+  // update streak if evet
+  if(ans === 'evet') {
+    const today2 = new Date().toDateString();
+    if(S.lastDay !== today2) {
+      S.streak++;
+      S.lastDay = today2;
+      LS.set('k_streak', S.streak);
+      LS.set('k_lastday', today2);
+      document.getElementById('stS').textContent = S.streak + '🔥';
+    }
+  }
+}
+
+function initWidCheck() {
+  initWidSoru();
+  const lastDate = LS.get('k_wcheck_date', '');
+  const today = new Date().toDateString();
+  if(lastDate === today) {
+    // already answered today
+    const ans = LS.get('k_wcheck_ans', '');
+    const msgs = ans === 'evet' ? WID_EVET : WID_HAYIR;
+    document.getElementById('widCheckRow').style.display = 'none';
+    document.getElementById('widChecked').style.display = 'block';
+    document.getElementById('widCheckedTxt').textContent = msgs[0];
+  }
+}
+
+function initCoaching() {
+  // Next coaching = next Monday (or configurable)
+  const coachDateStr = LS.get('k_coach_date', '');
+  let coachDate;
+  if(coachDateStr) {
+    coachDate = new Date(coachDateStr);
+  } else {
+    // default: next Monday
+    const now = new Date();
+    const day = now.getDay();
+    const toMonday = day === 0 ? 1 : 8 - day;
+    coachDate = new Date(now);
+    coachDate.setDate(now.getDate() + toMonday);
+  }
+  const diff = coachDate - new Date();
+  if(diff > 0) {
+    const days = Math.floor(diff / 864e5);
+    const hours = Math.floor((diff % 864e5) / 36e5);
+    if(days > 0) document.getElementById('wCoach').textContent = `${days} gün ${hours} saat sonra`;
+    else document.getElementById('wCoach').textContent = `${hours} saat sonra`;
+  } else {
+    document.getElementById('wCoach').textContent = 'Bugün! 🎯';
+  }
+}
+// ── YÜZDELİK DİLİM VERİSİ (TYT/LGS ÖSYM) ──
+const TYT_YUZDELIK=[
+  {net:120,yuzde:0.1,kisi:2000},{net:118,yuzde:0.15,kisi:3000},{net:116,yuzde:0.2,kisi:4000},
+  {net:114,yuzde:0.3,kisi:6000},{net:112,yuzde:0.4,kisi:8000},{net:110,yuzde:0.55,kisi:11000},
+  {net:108,yuzde:0.7,kisi:14000},{net:106,yuzde:0.9,kisi:18000},{net:104,yuzde:1.1,kisi:22000},
+  {net:102,yuzde:1.4,kisi:28000},{net:100,yuzde:1.7,kisi:34000},{net:98,yuzde:2.1,kisi:42000},
+  {net:96,yuzde:2.5,kisi:50000},{net:94,yuzde:3.0,kisi:60000},{net:92,yuzde:3.6,kisi:72000},
+  {net:90,yuzde:4.3,kisi:86000},{net:88,yuzde:5.1,kisi:102000},{net:86,yuzde:6.0,kisi:120000},
+  {net:84,yuzde:7.0,kisi:140000},{net:82,yuzde:8.1,kisi:162000},{net:80,yuzde:9.3,kisi:186000},
+  {net:78,yuzde:10.7,kisi:214000},{net:76,yuzde:12.2,kisi:244000},{net:74,yuzde:13.8,kisi:276000},
+  {net:72,yuzde:15.5,kisi:310000},{net:70,yuzde:17.3,kisi:346000},{net:68,yuzde:19.2,kisi:384000},
+  {net:66,yuzde:21.3,kisi:426000},{net:64,yuzde:23.5,kisi:470000},{net:62,yuzde:25.8,kisi:516000},
+  {net:60,yuzde:28.2,kisi:564000},{net:58,yuzde:30.8,kisi:616000},{net:56,yuzde:33.5,kisi:670000},
+  {net:54,yuzde:36.3,kisi:726000},{net:52,yuzde:39.2,kisi:784000},{net:50,yuzde:42.2,kisi:844000},
+  {net:48,yuzde:45.3,kisi:906000},{net:46,yuzde:48.5,kisi:970000},{net:44,yuzde:51.8,kisi:1036000},
+  {net:42,yuzde:55.2,kisi:1104000},{net:40,yuzde:58.7,kisi:1174000},{net:38,yuzde:62.3,kisi:1246000},
+  {net:36,yuzde:65.9,kisi:1318000},{net:34,yuzde:69.5,kisi:1390000},{net:32,yuzde:73.1,kisi:1462000},
+  {net:30,yuzde:76.5,kisi:1530000},{net:28,yuzde:79.8,kisi:1596000},{net:25,yuzde:83.5,kisi:1670000},
+  {net:22,yuzde:87.0,kisi:1740000},{net:18,yuzde:90.5,kisi:1810000},{net:10,yuzde:94.0,kisi:1880000},
+];
+const LGS_YUZDELIK=[
+  {net:90,yuzde:0.3,kisi:3000},{net:87,yuzde:0.7,kisi:7000},{net:85,yuzde:1.2,kisi:12000},
+  {net:83,yuzde:1.8,kisi:18000},{net:80,yuzde:2.8,kisi:28000},{net:78,yuzde:3.8,kisi:38000},
+  {net:76,yuzde:5.0,kisi:50000},{net:74,yuzde:6.5,kisi:65000},{net:72,yuzde:8.2,kisi:82000},
+  {net:70,yuzde:10.2,kisi:102000},{net:68,yuzde:12.5,kisi:125000},{net:65,yuzde:15.8,kisi:158000},
+  {net:62,yuzde:19.5,kisi:195000},{net:60,yuzde:22.8,kisi:228000},{net:57,yuzde:27.0,kisi:270000},
+  {net:55,yuzde:31.5,kisi:315000},{net:52,yuzde:36.5,kisi:365000},{net:50,yuzde:41.5,kisi:415000},
+  {net:47,yuzde:47.0,kisi:470000},{net:44,yuzde:52.5,kisi:525000},{net:40,yuzde:59.0,kisi:590000},
+];
+const KPSS_YUZDELIK=[
+  {net:100,yuzde:0.2,kisi:1000},{net:95,yuzde:0.5,kisi:2500},{net:90,yuzde:1.0,kisi:5000},
+  {net:85,yuzde:2.0,kisi:10000},{net:80,yuzde:3.5,kisi:17500},{net:75,yuzde:6.0,kisi:30000},
+  {net:70,yuzde:9.5,kisi:47500},{net:65,yuzde:14.0,kisi:70000},{net:60,yuzde:20.0,kisi:100000},
+  {net:55,yuzde:28.0,kisi:140000},{net:50,yuzde:37.0,kisi:185000},{net:45,yuzde:47.0,kisi:235000},
+  {net:40,yuzde:57.0,kisi:285000},{net:35,yuzde:67.0,kisi:335000},{net:30,yuzde:76.0,kisi:380000},
+];
+
+function getYuzdelik(net, exam) {
+  const t = exam==='LGS' ? LGS_YUZDELIK : exam==='KPSS' ? KPSS_YUZDELIK : TYT_YUZDELIK;
+  let r = t[t.length-1];
+  for(let i=0;i<t.length;i++){if(net>=t[i].net){r=t[i];break;}}
+  return r;
+}
+
+function fmtKisi(k) {
+  if(k>=1000000) return (k/1000000).toFixed(1)+' milyon';
+  if(k>=1000) return Math.round(k/1000)+'.000';
+  return k.toString();
+}
+
+function yuzdelikKart(net, exam) {
+  const r = getYuzdelik(net, exam);
+  const kf = fmtKisi(r.kisi);
+  let em='🎯', renk='var(--warn)';
+  if(r.yuzde<=1){em='🏆';renk='#ffd700';}
+  else if(r.yuzde<=5){em='⭐';renk='var(--gold)';}
+  else if(r.yuzde<=15){em='💪';renk='var(--success)';}
+  else if(r.yuzde<=35){em='📈';renk='var(--teal)';}
+  return `
+    <div style="background:linear-gradient(135deg,rgba(245,200,66,0.1),rgba(245,200,66,0.04));border:1px solid rgba(245,200,66,0.3);border-radius:16px;padding:20px 22px;margin-bottom:16px;text-align:center;">
+      <div style="font-size:2.8rem;margin-bottom:8px;">${em}</div>
+      <div style="font-family:'Lora',serif;font-size:1.3rem;font-weight:700;color:${renk};margin-bottom:6px;">
+        Türkiye'de İlk <span style="font-size:1.6rem;">${kf}</span> Kişi Arasındasın!
+      </div>
+      <div style="font-size:0.82rem;color:var(--muted2);line-height:1.6;">
+        %${r.yuzde} yüzdelik dilim · ${exam} sınavında <strong style="color:var(--text)">${kf}</strong> öğrenciyi geride bırakıyorsun
+      </div>
+      <div style="margin-top:12px;height:8px;background:rgba(255,255,255,0.07);border-radius:999px;overflow:hidden;">
+        <div style="height:100%;width:${Math.min(100-r.yuzde+5,98)}%;background:linear-gradient(90deg,${renk},var(--gold2));border-radius:999px;transition:width 1.2s ease;"></div>
+      </div>
+      <div style="font-size:0.7rem;color:var(--muted);margin-top:6px;">Senden iyi: %${r.yuzde} · Senin altında: %${(100-r.yuzde).toFixed(0)}</div>
+    </div>`;
+}
+
+// ── TEMA ──
+function setTheme(theme,btn){
+  document.documentElement.setAttribute('data-theme',theme==='default'?'':theme);
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('act'));
+  if(btn)btn.classList.add('act');
+  try{localStorage.setItem('k_theme',theme);}catch(e){}
+}
+function loadTheme(){
+  try{
+    const t=localStorage.getItem('k_theme')||'default';
+    if(t&&t!=='default'){
+      document.documentElement.setAttribute('data-theme',t);
+      const b=document.querySelector('.theme-btn[data-theme="'+t+'"]');
+      if(b){document.querySelectorAll('.theme-btn').forEach(x=>x.classList.remove('act'));b.classList.add('act');}
+    }
+  }catch(e){}
+}
+loadTheme();
+
+const LS = {
+  get(k, def='') { try { return localStorage.getItem(k)||def; } catch(e) { return def; } },
+  set(k, v) { try { localStorage.setItem(k, String(v)); } catch(e) {} },
+  remove(k) { try { localStorage.removeItem(k); } catch(e) {} },
+};
+function safeJSON(str, def) { try { return str ? JSON.parse(str) : def; } catch(e) { return def; } }
+
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+
+const MESLEKLER = [
+  "Yazılım Mühendisi","Bilgisayar Mühendisi","Elektrik-Elektronik Mühendisi",
+  "Makine Mühendisi","İnşaat Mühendisi","Endüstri Mühendisi","Kimya Mühendisi",
+  "Biyomedikal Mühendisi","Uçak Mühendisi","Çevre Mühendisi","Metalurji Mühendisi",
+  "Doktor (Tıp)","Diş Hekimi","Eczacı","Hemşire","Fizyoterapist","Veteriner",
+  "Avukat","Hakim","Savcı","Noter","Hukuk Müşaviri",
+  "Öğretmen (Matematik)","Öğretmen (Türkçe)","Öğretmen (Fen Bilimleri)",
+  "Öğretmen (İngilizce)","Öğretmen (Tarih)","Okul Öncesi Öğretmeni","Psikolojik Danışman",
+  "Psikolog","Sosyolog","Sosyal Hizmet Uzmanı","Çocuk Gelişimi Uzmanı",
+  "Ekonomist","İktisatçı","Finans Uzmanı","Bankacı","Muhasebeci","Mali Müşavir",
+  "İşletme Uzmanı","Pazarlama Uzmanı","İnsan Kaynakları Uzmanı",
+  "Mimar","İç Mimar","Peyzaj Mimarı","Şehir Plancısı",
+  "Gazeteci","Radyo-TV Sunucusu","Reklam ve PR Uzmanı","Grafik Tasarımcı",
+  "Polis Memuru","Jandarma","Subay (Kara Kuvvetleri)","Pilot (Türk Hava Kuvvetleri)",
+  "Memur (Genel İdare)","Vergi Müfettişi","Hesap Uzmanı","Banka Müfettişi",
+  "Girişimci","E-ticaret Uzmanı","Dijital Pazarlama Uzmanı","Veri Bilimci",
+  "Yapay Zeka Mühendisi","Siber Güvenlik Uzmanı","Oyun Tasarımcısı",
+  "Felsefe Akademisyeni","Tarihçi","Arkeolog","Filolog",
+  "Fizikçi","Kimyager","Biyolog","Matematikçi","İstatistikçi",
+  "Çevirmen","Yazar","Editör","Kütüphaneci",
+  "Turizm Rehberi","Otel Yöneticisi","Aşçı (Gastronomi)","Gıda Mühendisi",
+  "Spor Bilimcisi","Antrenör","Fizyoterapist",
+  "Hemşire","Ebe","Tıbbi Laboratuvar Teknikeri","Radyoloji Teknikeri",
+];
+
+const UNIVS = [
+  "Boğaziçi Üniversitesi","ODTÜ (Orta Doğu Teknik Üniversitesi)",
+  "İTÜ (İstanbul Teknik Üniversitesi)","İstanbul Üniversitesi",
+  "Ankara Üniversitesi","Hacettepe Üniversitesi","Gazi Üniversitesi",
+  "Ege Üniversitesi","Dokuz Eylül Üniversitesi","İzmir Yüksek Teknoloji Enstitüsü",
+  "Bilkent Üniversitesi","Koç Üniversitesi","Sabancı Üniversitesi",
+  "Marmara Üniversitesi","Yıldız Teknik Üniversitesi","Kocaeli Üniversitesi",
+  "Selçuk Üniversitesi","Erciyes Üniversitesi","Çukurova Üniversitesi",
+  "Gaziantep Üniversitesi","Karadeniz Teknik Üniversitesi","Uludağ Üniversitesi",
+  "Anadolu Üniversitesi","Eskişehir Teknik Üniversitesi","Mersin Üniversitesi",
+  "Akdeniz Üniversitesi","Samsun Ondokuz Mayıs Üniversitesi","Cumhuriyet Üniversitesi",
+  "Fırat Üniversitesi","İnönü Üniversitesi","Dicle Üniversitesi",
+  "Atatürk Üniversitesi","Pamukkale Üniversitesi","Bursa Uludağ Üniversitesi",
+  "Balıkesir Üniversitesi","Trakya Üniversitesi","Muğla Sıtkı Koçman Üniversitesi",
+  "Sakarya Üniversitesi","Gebze Teknik Üniversitesi","Bahçeşehir Üniversitesi",
+  "İstanbul Medipol Üniversitesi","Altınbaş Üniversitesi","Beykent Üniversitesi",
+  "Özyeğin Üniversitesi","Atılım Üniversitesi","TOBB ETÜ",
+  "Başkent Üniversitesi","Çankaya Üniversitesi","TED Üniversitesi",
+  "Zonguldak Bülent Ecevit Üniversitesi","Kastamonu Üniversitesi",
+  "Kırıkkale Üniversitesi","Nevşehir Hacı Bektaş Veli Üniversitesi",
+  "Afyon Kocatepe Üniversitesi","Düzce Üniversitesi","Bolu Abant İzzet Baysal Üniversitesi",
+  "Trabzon Üniversitesi","Artvin Çoruh Üniversitesi","Yüzüncü Yıl Üniversitesi",
+];
+
+const MIZ_SORULAR = [
+  {q:"Bir konuyu öğrenirken hangisini tercih edersin?",opts:["Kitaptan sessizce okuyarak","Birileriyle tartışarak","Video/görsel içeriklerle","Alıştırma yaparak, deneyerek"]},
+  {q:"Sınav baskısı altındayken nasıl hissedersin?",opts:["Odaklanırım, baskı beni güçlendiriyor","Tedirgin olurum ama toparlarım","Ciddi anksiyete yaşarım","Motive olurum, rekabeti severim"]},
+  {q:"Bir proje veya görevde hangisi seni daha çok tatmin eder?",opts:["Detaylı ve hatasız bir analiz","Yaratıcı bir çözüm üretmek","Başkalarına liderlik etmek","Hızlıca tamamlayıp geçmek"]},
+  {q:"Arkadaş grubundaki rolün nedir?",opts:["Analitik düşünen, ölçüp biçen","Enerji kaynağı, moral veren","Plan yapan, organize eden","Dinleyen, uyum sağlayan"]},
+  {q:"Matematiksel problemlerle karşılaştığında ilk tepkin nedir?",opts:["Heyecanlanırım, seviyorum","Nötr, çözebilirim","Biraz zorlanırım ama üstesinden gelirim","Kaçınırım mümkünse"]},
+  {q:"Gelecekte nasıl bir iş ortamında çalışmak istersin?",opts:["Sessiz, bireysel çalışma alanı","Dinamik ve sosyal ekip ortamı","Saha/sahne — aktif fiziksel çalışma","Esnek, evden veya uzaktan"]},
+  {q:"Başarısız bir sonuçla karşılaştığında ne yaparsın?",opts:["Hataları analiz edip düzeltirim","İçime kapanır, vakit geçince toparlarım","Hemen yeni bir strateji denerim","Çevremdekilerden destek alırım"]},
+  {q:"Sabah uyanınca seni motive eden nedir?",opts:["Net bir plan ve hedef listesi","İlham — yaratıcı bir fikir","Sosyal bir buluşma/etkileşim","Rutinin konforlu akışı"]},
+  {q:"Yoğun stres dönemlerinde nasıl başa çıkarsın?",opts:["Sistematik liste yapıp adım adım ilerlerim","Spor yapar, fiziksel aktivite yaparım","Müzik dinler ya da sanat yaparım","Konuşmam, içimde çözmeye çalışırım"]},
+  {q:"On yıl sonra kendini nerede görüyorsun?",opts:["Alanında uzman, bilinen biri","Kendi işini kurmuş girişimci","Topluma katkı sunan sosyal bir rol","Sevdikleriyle dengeli ve mutlu bir hayat"]},
+  {q:"Sana göre en zor şey hangisi?",opts:["Belirsizlikle yaşamak","Rutin ve tekrar","Karar verme sorumluluğu","Çatışma ve anlaşmazlık"]},
+  {q:"Eğer bugün ders çalışmak zorunda olmasaydın ne yapardın?",opts:["Yine de bir şeyler öğrenirdim (kitap/belgesel)","Arkadaşlarla vakit geçirirdim","Yaratıcı bir şeyler üretirdim","Dinlenir, enerji toplar/uyurdum"]},
+];
+
+const QUOTES = [
+  {t:"Bir gün ya istediğin hayatı yaşarsın, ya da istediğini neden yaşamadığını açıklarsın.",w:"Jim Rohn"},
+  {t:"Başarı, her gün tekrarlanan küçük çabaların toplamıdır.",w:"Robert Collier"},
+  {t:"Zorlukların ortasında fırsat yatar.",w:"Albert Einstein"},
+  {t:"Düşünebileceğin ve inanabileceğin her şeyi başarabilirsin.",w:"Napoleon Hill"},
+  {t:"Büyük işler, büyük güçlükler aşılarak yapılır.",w:"Voltaire"},
+  {t:"Azim, yeteneği her zaman geride bırakır.",w:"Calvin Coolidge"},
+  {t:"Kendi kendine inan. Tüm başarıların sırrı budur.",w:"Ralph Waldo Emerson"},
+  {t:"Bugün acı çeken yarın zaferi tadacak.",w:"Muhammed Ali"},
+  {t:"Her sabah uyanışın yeni bir fırsat. Onu boşa harcama.",w:"Marcus Aurelius"},
+  {t:"Başarının sırrı başlamaktır.",w:"Mark Twain"},
+  {t:"Hayatta en büyük zafer, her düşüşte kalkmaktır.",w:"Nelson Mandela"},
+  {t:"Disiplin, hedefler ile başarı arasındaki köprüdür.",w:"Jim Rohn"},
+  {t:"En uzun yolculuk tek bir adımla başlar.",w:"Lao Tzu"},
+  {t:"Kendinize yatırım yapmak en iyi yatırımdır.",w:"Benjamin Franklin"},
+  {t:"Sabır ve azimle, yumuşak su sert kayayı deler.",w:"Ogden Nash"},
+  {t:"Başarı, konfor alanının dışında başlar.",w:"Neale Donald Walsch"},
+  {t:"Geleceği tahmin etmenin en iyi yolu onu yaratmaktır.",w:"Peter Drucker"},
+  {t:"Kaptanlar sakin denizlerde yetişmez.",w:"Anonim"},
+  {t:"Zafere giden yol, alışkanlıklarınızın içinden geçer.",w:"Aristoteles"},
+  {t:"Kaybetmekten korkma. Kazanmaya aç ol.",w:"Muhammed Ali"},
+];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+const S = {
+  exam:'TYT/AYT',
+  dates:{
+    'TYT/AYT':new Date('2026-06-20T09:00:00'),
+    'LGS':    new Date('2026-06-13T09:00:00'),
+    'KPSS':   new Date('2026-10-04T09:00:00'),
+  },
+  plan:null,
+  done:safeJSON(LS.get('k_done')||'{}',{}),
+  streak:+LS.get('k_streak')||0,
+  lastDay:LS.get('k_lastday')||'',
+  cfg:safeJSON(LS.get('k_cfg')||'{"notif":false,"weekly":true,"streak":true,"time":"18:00"}',{}),
+};
+
+const OB = {name:'',cls:'',hours:'',exam:'',field:'',meslek:'',univ:'',miz:[],okulGiris:'',okulCikis:''};
+let mizIdx=0;
+
+// ═══════════════════════════════════════
+// AUTOCOMPLETE
+// ═══════════════════════════════════════
+function acFilter(wrapId, inpId, list) {
+  const val = document.getElementById(inpId).value.toLowerCase().trim();
+  const listEl = document.getElementById(wrapId+'-list');
+  if(!val){listEl.classList.remove('open');return;}
+  const hits = list.filter(i=>i.toLowerCase().includes(val)).slice(0,10);
+  if(!hits.length){listEl.classList.remove('open');return;}
+  listEl.innerHTML = hits.map((h,idx)=>{
+    const vi=h.toLowerCase().indexOf(val);
+    const hi=h.slice(0,vi)+'<strong>'+h.slice(vi,vi+val.length)+'</strong>'+h.slice(vi+val.length);
+    return `<div class="ac-item" data-val="${h.replace(/"/g,'&quot;')}" data-wrap="${wrapId}" data-inp="${inpId}">${hi}</div>`;
+  }).join('');
+  listEl.classList.add('open');
+  // attach click handlers
+  listEl.querySelectorAll('.ac-item').forEach(item=>{
+    item.addEventListener('click', function(){
+      const v=this.getAttribute('data-val');
+      const iid=this.getAttribute('data-inp');
+      const wid=this.getAttribute('data-wrap');
+      document.getElementById(iid).value=v;
+      document.getElementById(wid+'-list').classList.remove('open');
+    });
+  });
+}
+
+function acSel(wrapId, inpId, val) {
+  document.getElementById(inpId).value = val;
+  document.getElementById(wrapId+'-list').classList.remove('open');
+}
+
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.ac-wrap')) document.querySelectorAll('.ac-list').forEach(l=>l.classList.remove('open'));
+});
+
+// ═══════════════════════════════════════
+// ONBOARDING
+// ═══════════════════════════════════════
+function toggleOkul(){
+  const cls = document.getElementById('obC').value;
+  const hasOkul = ['8','9','10','11','12'].includes(cls);
+  document.getElementById('okulArea').style.display = hasOkul ? 'block' : 'none';
+}
+
+function chk1(){
+  const n=document.getElementById('obN').value.trim();
+  const c=document.getElementById('obC').value;
+  document.getElementById('bn1').disabled=!n;
+}
+
+function selH(el,val){
+  document.querySelectorAll('.hr-pill').forEach(p=>p.classList.remove('sel'));
+  el.classList.add('sel'); OB.hours=val;
+}
+
+function selEx(el,val){
+  document.querySelectorAll('.exam-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel'); OB.exam=val;
+}
+
+function obGo(step){
+  // Validate step 1
+  if(step===2){
+    const n=document.getElementById('obN')?.value.trim();
+    if(!n){
+      document.getElementById('obN').focus();
+      document.getElementById('obN').style.borderColor='var(--danger)';
+      setTimeout(()=>document.getElementById('obN').style.borderColor='',2000);
+      return;
+    }
+  }
+  OB.name  = document.getElementById('obN')?.value.trim()||OB.name;
+  OB.cls   = document.getElementById('obC')?.value||OB.cls;
+  OB.okulGiris = document.getElementById('okulGiris')?.value||OB.okulGiris;
+  OB.okulCikis = document.getElementById('okulCikis')?.value||OB.okulCikis;
+  OB.field = document.getElementById('obF')?.value||OB.field;
+  OB.meslek= document.getElementById('obM')?.value.trim()||OB.meslek;
+  OB.univ  = document.getElementById('obU')?.value.trim()||OB.univ;
+
+  document.querySelectorAll('.ob-card').forEach(c=>c.classList.remove('act'));
+  document.getElementById('obs'+step).classList.add('act');
+
+  [1,2,3,4,5].forEach(i=>{
+    const dot=document.getElementById('sd'+i),lbl=document.getElementById('sl'+i);
+    if(i<step){dot.className='os-dot fin';dot.textContent='✓';lbl.className='os-lbl fin';}
+    else if(i===step){dot.className='os-dot act';dot.textContent=i;lbl.className='os-lbl act';}
+    else{dot.className='os-dot';dot.textContent=i;lbl.className='os-lbl';}
+    if(i<5){const ln=document.getElementById('sl'+i+'-'+(i+1));if(ln)ln.className='os-line'+(i<step?' fin':'');}
+  });
+
+  if(step===4) renderMizac();
+  if(step===5) renderSummary();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Mizaç
+function renderMizac(){
+  mizIdx=0; OB.miz=[];
+  document.getElementById('mizBar').style.width='0%';
+  showMizQ();
+}
+
+function showMizQ(){
+  const q=MIZ_SORULAR[mizIdx];
+  const isLast = mizIdx===MIZ_SORULAR.length-1;
+  document.getElementById('mizCnt').innerHTML=`Soru ${mizIdx+1} / ${MIZ_SORULAR.length} &nbsp;·&nbsp; <span style="color:var(--gold3);font-size:0.65rem;">En fazla 2 şık seçebilirsin</span>`;
+  document.getElementById('mizBar').style.width=`${((mizIdx+1)/MIZ_SORULAR.length)*100}%`;
+  document.getElementById('mizQArea').innerHTML=`
+    <div class="miz-q">
+      <div class="miz-qtext">${q.q}</div>
+      <div class="miz-opts">
+        ${q.opts.map((o,i)=>`<button type="button" class="miz-opt" onclick="selMiz(this,${i})">${o}</button>`).join('')}
+      </div>
+    </div>`;
+  // Restore previous answers (multi-select)
+  const prevAns = OB.miz[mizIdx];
+  const nextBtn = document.getElementById('mizNext');
+  if(prevAns !== undefined && (Array.isArray(prevAns) ? prevAns.length > 0 : prevAns !== null)) {
+    const opts = document.querySelectorAll('.miz-opt');
+    const indices = Array.isArray(prevAns) ? prevAns : [prevAns];
+    indices.forEach(i => { if(opts[i]) opts[i].classList.add('sel'); });
+    nextBtn.disabled = false;
+  } else {
+    nextBtn.disabled = true;
+  }
+  nextBtn.textContent = isLast ? 'Tamamla ✓' : 'Sonraki →';
+  // Show/hide back button
+  const backBtn=document.getElementById('mizBack');
+  if(backBtn) backBtn.style.display='block';
+}
+
+function selMiz(el, idx) {
+  const opts = document.querySelectorAll('.miz-opt');
+  const selected = Array.from(opts).filter(o => o.classList.contains('sel'));
+
+  if(el.classList.contains('sel')) {
+    // Deselect
+    el.classList.remove('sel');
+  } else {
+    if(selected.length >= 2) {
+      // Remove first selected, add new one
+      selected[0].classList.remove('sel');
+    }
+    el.classList.add('sel');
+  }
+
+  const newSelected = Array.from(opts).filter(o => o.classList.contains('sel'));
+  OB.miz[mizIdx] = newSelected.map(o => Array.from(opts).indexOf(o));
+  document.getElementById('mizNext').disabled = newSelected.length === 0;
+}
+
+function prevMiz(){
+  if(mizIdx===0){
+    obGo(3);
+    return;
+  }
+  mizIdx--;
+  showMizQ();
+  // Restore previous answer if exists
+  if(OB.miz[mizIdx]!==undefined){
+    const opts=document.querySelectorAll('.miz-opt');
+    if(opts[OB.miz[mizIdx]]){
+      opts[OB.miz[mizIdx]].classList.add('sel');
+      document.getElementById('mizNext').disabled=false;
+    }
+  }
+}
+
+function nextMiz(){
+  if(mizIdx<MIZ_SORULAR.length-1){
+    mizIdx++;
+    showMizQ();
+    // Restore answer if already answered
+    if(OB.miz[mizIdx]!==undefined){
+      const opts=document.querySelectorAll('.miz-opt');
+      if(opts[OB.miz[mizIdx]]){
+        opts[OB.miz[mizIdx]].classList.add('sel');
+        document.getElementById('mizNext').disabled=false;
+      }
+    }
+  } else {
+    obGo(5);
+  }
+}
+
+function renderSummary(){
+  const clsMap={'9':'9. Sınıf','10':'10. Sınıf','11':'11. Sınıf','12':'12. Sınıf','mezun':'Mezun','8':'8. Sınıf','kpss':'KPSS Adayı'};
+  const fMap={'sayisal':'Sayısal (MF)','sozel':'Sözel (TS)','esit':'Eşit Ağırlık','dil':'Dil','tyt':'Sadece TYT','lisans':'KPSS Lisans','onlisans':'KPSS Önlisans','lgs':'LGS'};
+  document.getElementById('obSum').innerHTML=`
+    <div>👤 <strong>${OB.name}</strong></div>
+    <div>🎓 ${clsMap[OB.cls]||OB.cls||'—'}</div>
+    <div>⏱️ Günlük ${OB.hours||'—'} saat</div>
+    <div>🎯 ${OB.exam||'—'}${OB.field?' · '+fMap[OB.field]:''}</div>
+    ${OB.meslek?`<div>💼 ${OB.meslek}</div>`:''}
+    ${OB.univ?`<div>🏛️ ${OB.univ}</div>`:''}
+  `;
+  // Mizaç profile
+  const ans = OB.miz;
+  const analitik = ans.filter(a=>a===0).length;
+  const sosyal   = ans.filter(a=>a===1).length;
+  const organize  = ans.filter(a=>a===2).length;
+  const pratik   = ans.filter(a=>a===3).length;
+  const max = Math.max(analitik,sosyal,organize,pratik);
+  let profil='';
+  if(max===analitik) profil='Analitik Düşünür — Sistematik, detay odaklı ve mantık temelli bir zihin yapısına sahipsin. Hedef mesleğindeki teknik ve metodolojik zorluklar seni yıldırmaz.';
+  else if(max===sosyal) profil='Sosyal Lider — İnsan odaklı, ilişki kuran ve enerji veren bir profilsin. Ekip içi çalışma ve iletişim gerektiren mesleklerde parlarsın.';
+  else if(max===organize) profil='Stratejik Planlayıcı — Büyük resmi gören, sistematik planlayan ve sorumluluk alan bir yapıya sahipsin. Yönetim ve organizasyon rolleri sana göre.';
+  else profil='Pratik Uygulayıcı — Ellerini kirletmekten çekinmeyen, hızlı ve etkili sonuçlar arayan birisin. Aksiyon odaklı mesleklerde mutlu olursun.';
+  document.getElementById('mizProfile').textContent=profil;
+
+  const q=QUOTES[new Date().getDate()%QUOTES.length];
+  document.getElementById('obSum').insertAdjacentHTML('afterend',`<div style="margin-top:12px;font-family:'Lora',serif;font-size:0.88rem;font-style:italic;color:var(--muted2);line-height:1.6;">"${q.t}"<br><span style="font-size:0.72rem;font-style:normal;color:var(--gold3);">— ${q.w}</span></div>`);
+}
+
+function obFinish(){
+  LS.set('k_profile',JSON.stringify(OB));
+  document.getElementById('ob').style.display='none';
+  document.getElementById('app').style.display='block';
+  initApp();
+}
+
+// Check if already done
+const saved=LS.get('k_profile');
+if(saved){
+  Object.assign(OB,safeJSON(saved,{}));
+  document.getElementById('ob').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+
+// ═══════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════
+function goP(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('act'));
+  document.getElementById('p-'+name).classList.add('act');
+  if(btn)btn.classList.add('act');
+}
+
+// ═══════════════════════════════════════
+// COUNTDOWN
+// ═══════════════════════════════════════
+function setEx(ex,btn){
+  S.exam=ex;
+  document.querySelectorAll('.ex-pill').forEach(p=>p.classList.remove('act'));
+  if(btn)btn.classList.add('act');
+  tick();
+}
+
+const p2=n=>String(n).padStart(2,'0');
+const EX_LBL={'TYT/AYT':'TYT / AYT Sınavı','LGS':'LGS Sınavı','KPSS':'KPSS Sınavı'};
+
+function tick(){
+  const now=new Date(),tgt=S.dates[S.exam],diff=tgt-now;
+  if(diff<=0){['cdG','cdS','cdD','cdN'].forEach(id=>document.getElementById(id).textContent='0');return;}
+  const g=Math.floor(diff/864e5),s=Math.floor((diff%864e5)/36e5),d=Math.floor((diff%36e5)/6e4),n=Math.floor((diff%6e4)/1e3);
+  document.getElementById('cdG').textContent=g;
+  document.getElementById('cdS').textContent=p2(s);
+  document.getElementById('cdD').textContent=p2(d);
+  document.getElementById('cdN').textContent=p2(n);
+  document.getElementById('wD').textContent=g;
+  document.getElementById('wE').textContent=S.exam;
+  const ds=tgt.toLocaleDateString('tr-TR',{day:'numeric',month:'short'});
+  document.getElementById('wDt').textContent=ds;
+  document.getElementById('exDt').textContent=tgt.toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('exNm').textContent=EX_LBL[S.exam];
+  document.getElementById('wB').style.width=Math.max(0,Math.min(100,100-(g/365*100)))+'%';
+}
+
+setInterval(tick,1000);
+
+// ═══════════════════════════════════════
+// INIT APP
+// ═══════════════════════════════════════
+function initApp(){
+  tick();
+  const now=new Date();
+  const DAYS=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+  const MONTHS=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  document.getElementById('todayLbl').textContent=`${DAYS[now.getDay()]} · ${now.getDate()} ${MONTHS[now.getMonth()]}`;
+  const q=QUOTES[Math.floor(Math.random()*QUOTES.length)];
+  document.getElementById('motQ').textContent=`"${q.t}"`;
+  document.getElementById('motWho').textContent=`— ${q.w}`;
+  document.getElementById('motTag').textContent=`✦ Günün Mantras · ${OB.name||''}`;
+  if(document.getElementById('wM'))document.getElementById('wM').textContent=`"${q.t.substring(0,55)}${q.t.length>55?'…':''}" — ${q.w}`;
+  document.getElementById('stS').textContent=S.streak+'🔥';
+  document.getElementById('stW').textContent=Math.min(S.streak,7);
+  document.getElementById('stD').textContent=Object.values(S.done).filter(Boolean).length;
+  if(S.cfg.notif)document.getElementById('togN').classList.add('on');
+  if(!S.cfg.weekly)document.getElementById('togW').classList.remove('on');
+  if(!S.cfg.streak)document.getElementById('togSt').classList.remove('on');
+  document.getElementById('tTime').value=S.cfg.time;
+  const fmt=d=>d.toISOString().split('T')[0];
+  document.getElementById('dTYT').value=fmt(S.dates['TYT/AYT']);
+  document.getElementById('dLGS').value=fmt(S.dates['LGS']);
+  document.getElementById('dKPSS').value=fmt(S.dates['KPSS']);
+  buildSubjGrid();
+  if(S.plan)renderToday();
+  initWidCheck();
+  initCoaching();
+  initYakinMod();
+  renderHaftalikOzet();
+}
+
+function initYakinMod() {
+  const gun = sinavaKalanGun();
+  const banner = document.getElementById('yakinBanner');
+  if(!banner) return;
+  if(gun <= 30 && gun > 0) {
+    banner.style.display = 'block';
+    document.getElementById('yakinGun').textContent = gun + ' GÜN';
+    document.getElementById('yakinText').textContent = 
+      gun <= 7 ? 'Son ' + gun + ' gün! Sadece deneme ve hata analizi!' :
+      gun <= 14 ? gun + ' gün kaldı — Sabah TYT, Öğleden sonra AYT!' :
+      gun + ' gün kaldı — Seri deneme moduna geç!';
+    // Widget kırmızı yap
+    const wid = document.querySelector('.wid');
+    if(wid) wid.classList.add('yakin');
+  }
+}
+
+function renderHaftalikOzet() {
+  try {
+    const hist = safeJSON(LS.get('k_history', '[]'), []);
+    if(hist.length < 1) return;
+    const card    = document.getElementById('haftalikOzetCard');
+    const content = document.getElementById('haftalikOzetContent');
+    if(!card || !content) return;
+    card.style.display = 'block';
+    const son = hist.slice(-8);
+    const bars = son.map((h, i) => {
+      const prev  = i > 0 ? son[i-1].net : null;
+      const diff  = prev !== null ? (h.net - prev).toFixed(1) : null;
+      const renk  = diff === null ? 'var(--gold)' : parseFloat(diff) >= 0 ? 'var(--success)' : 'var(--danger)';
+      const arrow = diff === null ? '' : parseFloat(diff) >= 0 ? ` ▲${diff}` : ` ▼${Math.abs(diff)}`;
+      const kisiStr = h.kisi ? (h.kisi>=1000000?(h.kisi/1000000).toFixed(1)+' milyon':(Math.round(h.kisi/1000))+'K') : '';
+      const detailId = `hd${i}`;
+      const subjHTML = (h.subjects||[]).filter(s=>s.net>0).map(s=>`<span style="display:inline-block;background:rgba(255,255,255,0.07);border-radius:6px;padding:3px 8px;font-size:0.68rem;margin:2px;">${s.name}: <b style="color:var(--gold)">${parseFloat(s.net).toFixed(1)}</b></span>`).join('') || '<span style="font-size:0.72rem;color:var(--muted);">Ders detayı yok</span>';
+      return `<div style="border-bottom:1px solid var(--border);padding:8px 0;">
+        <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="var d=document.getElementById('${detailId}');d.style.display=d.style.display==='none'?'block':'none'">
+          <div style="font-size:0.68rem;color:var(--muted);width:68px;flex-shrink:0;">${new Date(h.date).toLocaleDateString('tr-TR',{day:'numeric',month:'short'})}</div>
+          <div style="flex:1;background:rgba(255,255,255,0.05);border-radius:999px;height:7px;overflow:hidden;">
+            <div style="height:100%;background:${renk};border-radius:999px;width:${Math.min(h.net/135*100,100)}%;"></div>
+          </div>
+          <div style="font-family:'Lora',serif;font-weight:700;color:${renk};min-width:76px;text-align:right;font-size:0.88rem;">${h.net} <span style="font-size:0.62rem;">${arrow}</span></div>
+          <span style="color:var(--muted);font-size:0.7rem;">▾</span>
+        </div>
+        <div id="${detailId}" style="display:none;margin-top:8px;padding:10px;background:rgba(0,0,0,0.12);border-radius:10px;">
+          <div style="font-size:0.63rem;color:var(--muted2);margin-bottom:6px;font-weight:700;letter-spacing:0.08em;">${h.exam||'TYT'} · ${kisiStr ? kisiStr+' kişiyi geride bıraktı' : ''} ${h.yuzde ? '· %'+h.yuzde+' dilim' : ''}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:2px;">${subjHTML}</div>
+        </div>
+      </div>`;
+    }).join('');
+    content.innerHTML = bars + `<div style="font-size:0.7rem;color:var(--muted);margin-top:10px;text-align:center;">Satıra tıkla → ders detaylarını gör</div>`;
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════
+// TODAY TASKS
+// ═══════════════════════════════════════
+function renderToday(){
+  const DAYS=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+  const today=DAYS[new Date().getDay()];
+  const day=S.plan.find(d=>d.day===today)||S.plan[0];
+  if(!day)return;
+  document.getElementById('todayTasks').innerHTML=day.tasks.map((t,i)=>{
+    const k=today+'-'+i,ok=!!S.done[k];
+    return `<div class="task ${ok?'done':''}" onclick="togTask('${today}',${i},this)">
+      <div class="chk">${ok?'✓':''}</div>
+      <div class="task-info"><div class="task-n">${t.desc}</div><div class="task-s">${t.subject}</div></div>
+      <span class="task-b">${t.amount}</span>
+    </div>`;
+  }).join('');
+}
+
+function togTask(day,idx,el){
+  const k=day+'-'+idx;
+  S.done[k]=!S.done[k];
+  LS.set('k_done',JSON.stringify(S.done));
+  el.classList.toggle('done');
+  el.querySelector('.chk').textContent=S.done[k]?'✓':'';
+  const today=new Date().toDateString();
+  if(S.lastDay!==today){S.streak++;S.lastDay=today;LS.set('k_streak',S.streak);LS.set('k_lastday',today);document.getElementById('stS').textContent=S.streak+'🔥';}
+  document.getElementById('stD').textContent=Object.values(S.done).filter(Boolean).length;
+}
+
+// ═══════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════
+async function reqNotif(){
+  if(!('Notification'in window)){alert('Bildirim desteklenmiyor. Mobil uygulamada tam destek!');return;}
+  const p=await Notification.requestPermission();
+  if(p==='granted'){
+    S.cfg.notif=true;document.getElementById('togN').classList.add('on');
+    LS.set('k_cfg',JSON.stringify(S.cfg));
+    new Notification('KoçAI 🦉',{body:'Bildirimler aktif! Her gün seni hatırlatacağım.'});
+    schedNotif();
+  }
+}
+function schedNotif(){
+  const [h,m]=(S.cfg.time||'18:00').split(':').map(Number);
+  const now=new Date(),tgt=new Date();tgt.setHours(h,m,0,0);
+  if(tgt<=now)tgt.setDate(tgt.getDate()+1);
+  setTimeout(()=>{
+    if(Notification.permission==='granted')
+      new Notification('KoçAI – Çalışma Zamanı 🦉',{body:S.plan?S.plan[new Date().getDay()%7]?.tasks?.[0]?.desc||'Hadi başla!':'Bugün de çalış!'});
+    schedNotif();
+  },tgt-now);
+}
+
+// ═══════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════
+function togS(k){const m={notif:'togN',weekly:'togW',streak:'togSt'};const el=document.getElementById(m[k]);if(!el)return;el.classList.toggle('on');S.cfg[k]=el.classList.contains('on');}
+function saveSet(){S.cfg.time=document.getElementById('tTime').value;LS.set('k_cfg',JSON.stringify(S.cfg));if(S.cfg.notif&&Notification.permission==='granted')schedNotif();const t=document.getElementById('toasty');t.style.display='block';setTimeout(()=>t.style.display='none',2500);}
+function saveDates(){
+  const t=document.getElementById('dTYT').value,
+        l=document.getElementById('dLGS').value,
+        k=document.getElementById('dKPSS').value,
+        c=document.getElementById('dCoach')?.value;
+  if(t)S.dates['TYT/AYT']=new Date(t+'T09:00:00');
+  if(l)S.dates['LGS']=new Date(l+'T09:00:00');
+  if(k)S.dates['KPSS']=new Date(k+'T09:00:00');
+  if(c){LS.set('k_coach_date',new Date(c+'T10:00:00').toISOString());initCoaching();}
+  tick();
+  alert('✦ Tarihler güncellendi!');
+}
+function saveApiKey(){
+  const v=document.getElementById('apiKeyInp').value.trim();
+  if(!v){alert('API anahtarı boş olamaz!');return;}
+  localStorage.setItem('k_apikey',v);
+  const el=document.getElementById('apiKeyStatus');
+  if(el){el.textContent='✦ API anahtarı kaydedildi';el.style.color='var(--teal)';setTimeout(()=>{el.textContent='Kayıtlı anahtar mevcut ✓';el.style.color='var(--muted2)';},2000);}
+}
+function saveGeminiKey(){
+  const v=document.getElementById('geminiKeyInp').value.trim();
+  if(!v){alert('API anahtarı boş olamaz!');return;}
+  if(!v.startsWith('AIza')){alert('Geçersiz Gemini anahtarı. "AIza" ile başlamalı.');}
+  localStorage.setItem('k_geminikey',v);
+  const el=document.getElementById('geminiKeyStatus');
+  if(el){el.textContent='✦ Gemini API anahtarı kaydedildi';el.style.color='var(--teal)';setTimeout(()=>{el.textContent='Kayıtlı anahtar mevcut ✓';el.style.color='var(--muted2)';},2000);}
+}
+function loadGeminiKeyInput(){
+  const k=localStorage.getItem('k_geminikey')||'';
+  const el=document.getElementById('geminiKeyInp');
+  if(el&&k){el.value=k;const st=document.getElementById('geminiKeyStatus');if(st){st.textContent='✦ Kayıtlı anahtar mevcut';st.style.color='var(--muted2)';}}
+}
+function clearHistory(){if(confirm('Geçmiş net verileri silinecek. Emin misin?')){LS.remove('k_history');renderHaftalikOzet();alert('✦ Geçmiş temizlendi!');}}
+function resetApp(){if(confirm('Profil silinecek. Emin misin?')){['k_profile','k_done','k_streak','k_lastday','k_cfg','k_history'].forEach(k=>LS.remove(k));location.reload();}}
+
+// ═══════════════════════════════════════
+// UPLOAD & ANALYSIS
+// ═══════════════════════════════════════
+const SUBJS=[
+  {n:'Türkçe',e:'📝'},{n:'Matematik',e:'🔢'},{n:'Fizik',e:'⚛️'},
+  {n:'Kimya',e:'🧪'},{n:'Biyoloji',e:'🧬'},{n:'Tarih',e:'🏛️'},
+  {n:'Coğrafya',e:'🗺️'},{n:'Felsefe',e:'💭'},{n:'Din Kültürü',e:'📖'},
+];
+
+let b64=null,manOn=false;
+
+function buildSubjGrid(){
+  const g=document.getElementById('sGrid');
+  if(!g||g.children.length)return;
+  SUBJS.forEach(s=>g.innerHTML+=`
+    <div class="subj-r">
+      <span>${s.e}</span><div class="sn">${s.n}</div>
+      <input class="ni" type="number" min="-10" max="40" placeholder="–" id="ni-${s.n}" oninput="chkR()"/>
+      <div class="nl">net</div>
+    </div>`);
+}
+
+function togMan(){manOn=!manOn;document.getElementById('manArea').style.display=manOn?'block':'none';document.getElementById('mArr').textContent=manOn?'▾':'▸';chkR();}
+
+function onFile(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    b64=ev.target.result.split(',')[1];
+    document.getElementById('fpI').src=ev.target.result;
+    document.getElementById('fp').style.display='block';
+    document.getElementById('uz').classList.add('has');
+    document.getElementById('uz').querySelector('.upload-ttl').textContent='✦ Fotoğraf Yüklendi';
+    // Fotoğraf yüklenince net girişini otomatik aç
+    if(!manOn){togMan();}
+    chkR();
+  };r.readAsDataURL(f);
+}
+
+function chkR(){
+  const hasP=!!b64;
+  const hasM=manOn&&SUBJS.some(s=>{const v=document.getElementById('ni-'+s.n)?.value;return v!==''&&v!=null;});
+  document.getElementById('startB').disabled=!(hasP||hasM);
+  const hint=document.getElementById('photoHint');
+  if(hint) hint.style.display=(hasP&&!hasM)?'block':'none';
+}
+
+// ── Gemini ile fotoğraf oku ───────────────────────────────
+async function readPhotoWithGemini(b64Data){
+  const key=localStorage.getItem('k_geminikey')||'';
+  if(!key) throw new Error('GEMINI_KEY_MISSING');
+
+  const prompt=`Bu Türk sınav karnesi veya deneme sonuç fotoğrafını analiz et. Her dersin Doğru (D), Yanlış (Y) sayısını bul. Net = D - Y/4 formülüyle hesapla. SADECE şu JSON formatında cevap ver, başka hiçbir şey yazma:
+{"Türkçe":{"dogru":0,"yanlis":0,"net":0},"Matematik":{"dogru":0,"yanlis":0,"net":0},"Fizik":{"dogru":0,"yanlis":0,"net":0},"Kimya":{"dogru":0,"yanlis":0,"net":0},"Biyoloji":{"dogru":0,"yanlis":0,"net":0},"Tarih":{"dogru":0,"yanlis":0,"net":0},"Coğrafya":{"dogru":0,"yanlis":0,"net":0},"Felsefe":{"dogru":0,"yanlis":0,"net":0},"Din Kültürü":{"dogru":0,"yanlis":0,"net":0}}
+Fotoğrafta olmayan derslerin değerleri 0 kalabilir. Net değerlerini küsuratlı ver (örn: 18.75).`;
+
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      contents:[{parts:[
+        {text:prompt},
+        {inline_data:{mime_type:'image/jpeg',data:b64Data}}
+      ]}],
+      generationConfig:{temperature:0.1,maxOutputTokens:512}
+    })
+  });
+
+  if(!res.ok){const e=await res.json();throw new Error('Gemini: '+(e.error?.message||res.status));}
+  const data=await res.json();
+  const txt=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+  // JSON'u temizle ve parse et
+  const clean=txt.replace(/```json|```/g,'').trim();
+  const parsed=JSON.parse(clean);
+
+  // Formunu doldur
+  let herhangiNetVar=false;
+  SUBJS.forEach(s=>{
+    const el=document.getElementById('ni-'+s.n);
+    if(!el)return;
+    const dersData=parsed[s.n];
+    if(dersData&&dersData.net!==0){
+      el.value=parseFloat(dersData.net.toFixed(2));
+      herhangiNetVar=true;
+    }
+  });
+
+  if(!herhangiNetVar) throw new Error('Fotoğraftan net okunamadı. Netlerini elle gir.');
+  return true;
+}
+
+async function startAn(){
+  document.getElementById('upForm').style.display='none';
+  document.getElementById('loadArea').classList.add('on');
+  animLoad();
+  try{
+    // Fotoğraf varsa → API ile sadece netleri oku, sonra hesapla()
+    if(b64){
+      try{
+        await anPhoto(); // netleri forma doldurur, sonra hesapla() çalışır
+      }catch(photoErr){
+        console.warn('Fotoğraf okuma hatası:',photoErr.message);
+        document.getElementById('loadArea').classList.remove('on');
+        document.getElementById('upForm').style.display='block';
+        alert('📸 Fotoğraf okunamadı.\n\nNetlerini elle girerek devam edebilirsin.');
+        return;
+      }
+    }
+    // Fotoğraf veya manuel → her zaman lokal hesapla()
+    const r=hesapla();
+    if(!r)return;
+    S.plan=r.weekPlan;
+    renderRes(r);
+    renderToday();
+  }catch(e){
+    console.error('startAn hatası:',e);
+    document.getElementById('loadArea').classList.remove('on');
+    document.getElementById('upForm').style.display='block';
+    alert('❌ Analiz hatası: '+e.message);
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+//  hesapla() — TAM DİNAMİK LOCAL ANALİZ FONKSİYONU (v10)
+//  API gerektirmez. Gerçek net inputlarını okur, sınıflandırır,
+//  kişiselleştirilmiş rapor + haftalık plan üretir.
+// ─────────────────────────────────────────────────────────
+function hesapla(){
+
+  // ── 1. PROFİL VERİLERİ ──────────────────────────────────
+  const ad          = OB.name   || 'Öğrenci';
+  const hedefMeslek = OB.meslek || 'Hedeflenen Meslek';
+  const sinav       = OB.exam   || 'TYT';
+
+  // ── 2. NET OKUMA ─────────────────────────────────────────
+  let toplamNet = 0;
+  const dersler = [];
+  SUBJS.forEach(s=>{
+    const el  = document.getElementById('ni-'+s.n);
+    const val = el ? el.value.trim() : '';
+    if(val!==''){
+      const net = parseFloat(val)||0;
+      toplamNet += net;
+      dersler.push({name:s.n, net:parseFloat(net.toFixed(2))});
+    }
+  });
+
+  if(dersler.length===0){
+    // Fotoğraf varsa boş netlerle de devam et (API okuyacak)
+    // Fotoğraf yoksa uyarı ver
+    if(!b64){
+      document.getElementById('loadArea').classList.remove('on');
+      document.getElementById('upForm').style.display='block';
+      alert('En az bir derse net girmen gerekiyor!');
+      return null;
+    }
+    // Fotoğraflı modda tüm dersler 0 net ile başlasın
+    SUBJS.forEach(s=>dersler.push({name:s.n,net:0}));
+  }
+  toplamNet = parseFloat(toplamNet.toFixed(2));
+
+  // ── 3. DERS-İÇİ KONU DB (seviyeye göre öncelikli konular) ──
+  const dersKonular={
+    'Türkçe':{
+      bsl:['Ana Düşünce & Paragraf','Sözcük Türleri (isim-fiil-sıfat)','Cümle Yapısı','Noktalama ve Yazım'],
+      ort:['Şiir Yorumu ve Edebi Türler','Anlatım Bozukluğu','Deyim-Atasözü','İleri Paragraf Tipleri'],
+      ilr:['Öğretici Metin Analizi','İnce Yazım Kuralları','Ses Olayları','Sözcük Anlam İlişkileri']
+    },
+    'Matematik':{
+      bsl:['Temel İşlemler & Kesirler','Oran-Orantı','Üslü ve Köklü Sayılar','Problemler (Yaş-Hız)'],
+      ort:['1. Derece Denklemler','Fonksiyonlar','Olasılık ve Sayma','İstatistik'],
+      ilr:['Türev ve Uygulamaları','İntegral','Karmaşık Sayılar','Diziler ve Seriler']
+    },
+    'Fizik':{
+      bsl:['Kuvvet ve Hareket (Newton Yasaları)','Enerji ve İş','Basınç','Dalgalar Temeli'],
+      ort:['Elektrik Devreleri','Manyetizma','Optik','Çembersel Hareket'],
+      ilr:['Modern Fizik (Fotoelektrik)','Transformatörler','Elektromanyetik Dalga','Atom Fiziği']
+    },
+    'Kimya':{
+      bsl:['Mol Kavramı','Asit-Baz ve pH','Periyodik Tablo','Kimyasal Bağlar'],
+      ort:['Kimyasal Denge','Organik Kimya Giriş','Çözeltiler ve Konsantrasyon','Elektrokimya Temeli'],
+      ilr:['İleri Organik Reaksiyonlar','Termodinamik','Elektrokimya (İleri)','Biyomoleküller']
+    },
+    'Biyoloji':{
+      bsl:['Hücre Yapısı ve Organeller','Mitoz-Mayoz','DNA ve Protein Sentezi','Enzimler'],
+      ort:['Sinir Sistemi','Solunum ve Dolaşım','Kalıtım Problemleri','Ekosistem'],
+      ilr:['Biyoteknoloji (PCR-Klonlama)','Evrim','Bitki Anatomisi','Homeostasi']
+    },
+    'Tarih':{
+      bsl:['Osmanlı Kuruluş ve Yükseliş','Atatürk İlkeleri','İnkılaplar','Kurtuluş Savaşı'],
+      ort:['Osmanlı Çöküşü ve Tanzimat','1. ve 2. Dünya Savaşı','Soğuk Savaş','Türkiye Cumhuriyeti Tarihi'],
+      ilr:['Uygarlıklar ve Kültür Tarihi','Osmanlı Ekonomisi','Çağdaş Dünya Tarihi','Siyasi Tarih Analizi']
+    },
+    'Coğrafya':{
+      bsl:['Türkiye İklim Bölgeleri','Nüfus ve Göç','Harita Bilgisi','Türkiye Yer Şekilleri'],
+      ort:['Bölgeler Coğrafyası','Ekonomik Coğrafya (Tarım-Sanayi)','Beşerî Coğrafya','Enerji Kaynakları'],
+      ilr:['Küresel Çevre Sorunları','Kalkınma ve Dünya Ekonomisi','Siyasi Coğrafya','İklim Değişikliği']
+    },
+    'Felsefe':{
+      bsl:['Bilgi Felsefesi (Epistemoloji)','Varlık Felsefesi (Ontoloji)','Temel Felsefe Akımları','Mantık'],
+      ort:['Ahlak Felsefesi (Etik)','Siyaset Felsefesi','Estetik','Çağdaş Felsefe Akımları'],
+      ilr:['Bilim Felsefesi','Dil Felsefesi','Sembolik Mantık','Din Felsefesi']
+    },
+    'Din Kültürü':{
+      bsl:['İslam\'ın Şartları ve İbadetler','Peygamberler','İslam Tarihi Temeli','Ahlak İlkeleri'],
+      ort:['Dünya Dinleri (Hristiyanlık-Yahudilik)','İslam Medeniyeti','Güncel Dini Meseleler','Laiklik'],
+      ilr:['Din Sosyolojisi','Karşılaştırmalı Dinler','İslam Hukuku Temeli','Güncel Etik Sorunlar']
+    }
+  };
+
+  // ── 4. SINIFLANDIRMA (konu bazlı) ───────────────────────
+  const sorted      = [...dersler].sort((a,b)=>a.net-b.net);
+  const enZayif     = sorted[0];
+
+  function sevKonuList(d){
+    const kod=d.net<5?'bsl':d.net<=15?'ort':'ilr';
+    const konular=dersKonular[d.name]?.[kod]||[];
+    const oncelik=konular.slice(0,2).join(' · ');
+    return `${d.name} (net ${d.net.toFixed(1)}) → Önce: ${oncelik||'Temel konular'}`;
+  }
+
+  const urgentTopics = dersler.filter(d=>d.net< 5 ).map(sevKonuList);
+  const mediumTopics = dersler.filter(d=>d.net>=5&&d.net<=15).map(sevKonuList);
+  const goodTopics   = dersler.filter(d=>d.net>15).map(d=>`${d.name} – Net: ${d.net.toFixed(1)} (Güçlü, koru)`);
+
+  // ── 4. DERS BAZLI KAYNAK DB ──────────────────────────────
+  const kaynakDB = {
+    'Türkçe':{
+      bsl:{kitaplar:['Kafa Dengi Türkçe','Aktif Öğrenme Türkçe'],youtube:['Rüştü Hoca ile Türkçe','Kadir Gümüş Dil Bilgisi','Türkçe Öğretmeni','Dil ve Anlatım'],neden:'Paragraf mantığı ve dil bilgisi kuralları için önce temel soru tipleri.'},
+      ort:{kitaplar:['Limit Türkçe','345 Türkçe Soru Bankası'],youtube:['Rüştü Hoca ile Türkçe','Kadir Gümüş Dil Bilgisi','Öğretmen Akademisi'],neden:'Paragraf rutini kur: günlük 20 paragraf sorusu minimum.'},
+      ilr:{kitaplar:['Apotemi Türkçe','Orijinal Türkçe'],youtube:['Rüştü Hoca ile Türkçe','Türkçe Hocam'],neden:'Zorlayıcı paragraf tipleri ve sözcük bilgisi sorularına geç.'}
+    },
+    'Matematik':{
+      bsl:{kitaplar:['Antrenmanlarla Matematik','Kafa Dengi Matematik'],youtube:['Rehber Matematik','Mert Hoca Temel Atma','Matematik Delisi','Özel Ders TV'],neden:'Temel işlemler sağlam değil. Antrenmanlarla başla, acele etme.'},
+      ort:{kitaplar:['345 Matematik','Bilgi Sarmal Matematik'],youtube:['Rehber Matematik','Mert Hoca Problemler Kampı','Birol Hoca','Kadir Hoca'],neden:'Orta seviye – 345 sınav formatına en yakın kaynak.'},
+      ilr:{kitaplar:['Apotemi Matematik','Orijinal Matematik'],youtube:['Matematik Delisi','Mert Hoca','Özel Ders TV'],neden:'Türev, integral, olasılık odak. Apotemi yeterince zorluyor.'}
+    },
+    'Fizik':{
+      bsl:{kitaplar:['Kafa Dengi Fizik','Aktif Fizik Fasikülleri'],youtube:['VIP Fizik','Fizik Lab','Benim Hocam Fizik'],neden:'Temel mekanik ve enerji konularından başla.'},
+      ort:{kitaplar:['Esen Fizik','Bilgi Sarmal Fizik'],youtube:['VIP Fizik','Mehmet Hoca Fizik','Fizik Delisi'],neden:'Dalgalar ve elektrik öncelikli.'},
+      ilr:{kitaplar:['Orijinal Fizik','Apotemi Fizik'],youtube:['VIP Fizik','Fizik Lab'],neden:'Modern fizik ve bütünleşik sorulara odaklan.'}
+    },
+    'Kimya':{
+      bsl:{kitaplar:['Aktif Kimya Fasikülleri','Kafa Dengi Kimya'],youtube:['Görkem Şahin Kimya','Serdar Hoca','Kimya Küpü','Kimya Hocam'],neden:'Mol kavramı ve asit-baz temeli olmadan ilerleme olmaz.'},
+      ort:{kitaplar:['345 Kimya','Esen Kimya'],youtube:['Görkem Şahin Kimya','Serdar Hoca','Benim Hocam Kimya'],neden:'Organik kimya ve denge öncelikli.'},
+      ilr:{kitaplar:['Apotemi Kimya','Orijinal Kimya'],youtube:['Görkem Şahin Kimya','Kimya Küpü'],neden:'Elektrokimya ve ileri organik konulara geç.'}
+    },
+    'Biyoloji':{
+      bsl:{kitaplar:['Kafa Dengi Biyoloji','Aktif Biyoloji'],youtube:['Biyoloji Kafası','Öğretmen Akademisi','Benim Hocam Biyoloji'],neden:'Hücre ve kalıtım temel konular.'},
+      ort:{kitaplar:['Bilgi Sarmal Biyoloji','345 Biyoloji'],youtube:['Biyoloji Kafası','Benim Hocam Biyoloji'],neden:'Sinir sistemi ve evrim sıkça çıkıyor.'},
+      ilr:{kitaplar:['Apotemi Biyoloji','Orijinal Biyoloji'],youtube:['Biyoloji Kafası'],neden:'Biyoteknoloji ve ekosistem sorularına odaklan.'}
+    },
+    'Tarih':{
+      bsl:{kitaplar:['Kafa Dengi Tarih','Aktif Tarih'],youtube:['Ramazan Yetgin','Tarih Kafası','Benim Hocam Tarih'],neden:'Osmanlı kuruluş ve Atatürk dönemi önce tam öğrenilmeli.'},
+      ort:{kitaplar:['Limit Tarih','345 Tarih'],youtube:['Ramazan Yetgin','Benim Hocam Serisi','Tarih Kafası'],neden:'Nokta atışı tekrar: sıkça çıkan konuları listele ve tara.'},
+      ilr:{kitaplar:['Orijinal Tarih','Apotemi Tarih'],youtube:['Ramazan Yetgin'],neden:'Çok boyutlu tarih soruları için kavram haritaları çiz.'}
+    },
+    'Coğrafya':{
+      bsl:{kitaplar:['Kafa Dengi Coğrafya','Aktif Coğrafya'],youtube:['Coğrafya Hocam','Benim Hocam Coğrafya','Öğretmen Akademisi'],neden:'Türkiye iklim ve nüfus konuları temel.'},
+      ort:{kitaplar:['345 Coğrafya','Limit Coğrafya'],youtube:['Coğrafya Hocam','Benim Hocam Coğrafya'],neden:'Harita okuma ve bölgeler öncelikli.'},
+      ilr:{kitaplar:['Apotemi Coğrafya','Orijinal Coğrafya'],youtube:['Coğrafya Hocam'],neden:'Beşerî coğrafya ve çevre soruları zor geliyor, bu alana odaklan.'}
+    },
+    'Felsefe':{
+      bsl:{kitaplar:['Kafa Dengi Felsefe','Aktif Felsefe'],youtube:['Felsefe Hocam','Benim Hocam Felsefe','Öğretmen Akademisi'],neden:'Bilgi ve varlık felsefesi temel akımlarını önce öğren.'},
+      ort:{kitaplar:['345 Felsefe','Limit Felsefe'],youtube:['Felsefe Hocam','Benim Hocam Felsefe'],neden:'Ahlak felsefesi ve epistemoloji sık çıkıyor.'},
+      ilr:{kitaplar:['Apotemi Felsefe','Orijinal Felsefe'],youtube:['Felsefe Hocam'],neden:'Siyaset felsefesi ve mantık bölümü zorlayıcı, derinleş.'}
+    },
+    'Din Kültürü':{
+      bsl:{kitaplar:['Kafa Dengi Din Kültürü'],youtube:['Benim Hocam Din','Öğretmen Akademisi'],neden:'Temel ibadetler ve İslam tarihi konuları önce.'},
+      ort:{kitaplar:['345 Din Kültürü'],youtube:['Benim Hocam Din'],neden:'Dünya dinleri ve ahlak bölümü hazır olmayabilir.'},
+      ilr:{kitaplar:['Apotemi Din Kültürü'],youtube:['Benim Hocam Din'],neden:'Güçlü alan, tekrar dozunu koru.'}
+    }
+  };
+
+  function sevKod(net){return net<5?'bsl':net<=15?'ort':'ilr';}
+  const sevLabel={bsl:'Başlangıç',ort:'Orta',ilr:'İleri'};
+
+  const kaynaklar = dersler.map(d=>{
+    const kod = sevKod(d.net);
+    const db  = kaynakDB[d.name]?.[kod]||{kitaplar:['Ders kitabı'],youtube:['Öğretmen Akademisi'],neden:'Temel konuları çalış.'};
+    const oncelikliKonular = (dersKonular[d.name]?.[kod]||[]).slice(0,2).join(', ');
+    const nedenDinamik = `Net ${d.net.toFixed(1)} → ${sevLabel[kod]} seviye. Öncelikli konular: ${oncelikliKonular||'Temel konular'}. ${db.neden}`;
+    return{ders:d.name, seviye:sevLabel[kod], kitaplar:db.kitaplar, youtube:db.youtube, neden:nedenDinamik};
+  });
+
+  // ── 5. KARİYER KATEGORİSİ & UYUMU ─────────────────────────
+  const ml = hedefMeslek.toLowerCase();
+  let kategori = 'genel';
+  if(ml.includes('müh')||ml.includes('yazılım')||ml.includes('mak')||ml.includes('elek')||ml.includes('bilg')||ml.includes('tekno')||ml.includes('yapay'))
+    kategori='muhendis';
+  else if(ml.includes('dokt')||ml.includes('hekim')||ml.includes('eczac')||ml.includes('diş')||ml.includes('hemş')||ml.includes('sağlık')||ml.includes('ebe')||ml.includes('fizy')||ml.includes('beslen'))
+    kategori='saglik';
+  else if(ml.includes('avuk')||ml.includes('hukuk')||ml.includes('savcı')||ml.includes('hakim')||ml.includes('noter')||ml.includes('arabulucu'))
+    kategori='hukuk';
+  else if(ml.includes('öğret')||ml.includes('pedago')||ml.includes('rehber')||ml.includes('akade'))
+    kategori='egitim';
+  else if(ml.includes('ekono')||ml.includes('finans')||ml.includes('işlet')||ml.includes('muhase')||ml.includes('banka')||ml.includes('sigort'))
+    kategori='isletme';
+  else if(ml.includes('psiko')||ml.includes('sosyal hizmet')||ml.includes('danışman')||ml.includes('terapist'))
+    kategori='sosyal';
+  else if(ml.includes('mimar')||ml.includes('tasarım')||ml.includes('grafik')||ml.includes('sanat')||ml.includes('iç mimar'))
+    kategori='sanat';
+  else if(ml.includes('gazeteci')||ml.includes('medya')||ml.includes('iletişim')||ml.includes('halkla'))
+    kategori='iletisim';
+
+  const katIlgili={
+    muhendis:['Matematik','Fizik','Kimya'],
+    saglik:  ['Biyoloji','Kimya','Fizik'],
+    hukuk:   ['Türkçe','Tarih','Felsefe'],
+    egitim:  ['Türkçe','Tarih','Biyoloji'],
+    isletme: ['Matematik','Coğrafya','Tarih'],
+    sosyal:  ['Biyoloji','Felsefe','Türkçe'],
+    sanat:   ['Türkçe','Matematik','Coğrafya'],
+    iletisim:['Türkçe','Tarih','Coğrafya'],
+    genel:   ['Matematik','Türkçe']
+  };
+  const katAydinlik={
+    muhendis:['Yüksek teknoloji ve inovasyon merkezi','Güçlü iş imkânı, uluslararası kariyer yolu','Uzaktan çalışma ve proje esnekliği giderek artıyor'],
+    saglik:  ['İnsan hayatını kurtarma ve iyileştirme ayrıcalığı','Her koşulda talep gören güvenceli bir meslek','Devlet ve özel sektörde geniş istihdam imkânı'],
+    hukuk:   ['Adaleti temsil etme ve hakları savunma','Kamu, özel ve akademi arasında kariyer çeşitliliği','Toplumsal saygınlık ve etki alanı geniş'],
+    egitim:  ['Nesillere katkı ve sürdürülebilir toplumsal etki','Devlet güvencesi ve sosyal haklar','Tatil dönemleri ve esnek çalışma saatleri'],
+    isletme: ['Çoklu sektörde kariyer ve girişimcilik imkânı','Yüksek kazanç ve liderlik potansiyeli','Dinamik iş dünyası deneyimi ve network'],
+    sosyal:  ['Anlamlı ve insan odaklı bir iş hayatı','Toplumsal dönüşüme doğrudan katkı','Farklı yaş ve gruplarla çalışma zenginliği'],
+    sanat:   ['Yaratıcılığı mesleki kimliğe dönüştürme fırsatı','Özgür ve dinamik çalışma ortamı','Küresel tasarım ve sanat piyasasına erişim'],
+    iletisim:['Medya ve toplumu şekillendirme gücü','Farklı sektörlerde geniş kariyer seçenekleri','Yaratıcı ve sosyal bir iş ortamı'],
+    genel:   [`${hedefMeslek} alanında güçlü iş imkânı`,'Analitik ve problem çözme odaklı kariyer','Sürekli gelişime açık dinamik bir alan']
+  };
+  const katGolge={
+    muhendis:['Sürekli teknoloji takibi ve öğrenme zorunluluğu','Yoğun proje ve deadline baskısı','Matematiksel temel çok kritik — şu an geliştirme gerekiyor'],
+    saglik:  ['Uzun ve yorucu vardiya sistemi (12+ saat çalışma)','Duygusal tükenmişlik (burnout) riski yüksek','Biyoloji ve Kimya sınav müfredatında belirleyici — derin çalışma şart'],
+    hukuk:   ['Uzun eğitim, staj ve sınav süreci','Sözlü anlatım ve yoğun okuma gerektiriyor','İş bulma rekabeti ciddi biçimde artıyor'],
+    egitim:  ['Ücret skalası diğer mesleklere göre sınırlı kalabiliyor','Kalabalık sınıf yönetimi zorlu olabiliyor','Sabır ve uzun vadeli motivasyon çok önemli'],
+    isletme: ['Sektöre göre iş güvencesi değişken','Hedef odaklı ve stresli ortamlar sık görülüyor','Piyasa koşullarına sürekli uyum şart'],
+    sosyal:  ['Duygusal yük ve empatik yorgunluk riski','Kamu sektöründe düşük ücret skalası olabilir','Bürokratik süreçler motivasyonu zorlayabilir'],
+    sanat:   ['Gelir istikrarsızlığı ve belirsizlik dönemi olabilir','Öznel değerlendirmeye açık rekabetçi alan','Portföy oluşturma uzun zaman alıyor'],
+    iletisim:['Medya sektöründe yoğun rekabet','Dijital dönüşüme hızlı uyum gerekiyor','Sosyal baskı ve kamuoyu etkisi yönetimi zorlayıcı'],
+    genel:   [`${hedefMeslek} için mevcut net ortalamasını artırman gerekiyor`,'İlgili derslere daha fazla zaman ayırman şart','Uzun ve yoğun bir hazırlık süreci seni bekliyor']
+  };
+
+  const ilgili     = katIlgili[kategori];
+  const ilgiliNetler = ilgili.map(dn=>dersler.find(d=>d.name===dn)?.net||0);
+  const ilgiliOrt    = ilgiliNetler.reduce((a,b)=>a+b,0)/ilgiliNetler.length;
+  const uyumPct      = Math.min(95,Math.max(20,Math.round((ilgiliOrt/20)*100)));
+
+  // Mesleğe özgü dürüst yorum
+  const kritikDers = ilgili[0];
+  const kritikNet  = dersler.find(d=>d.name===kritikDers)?.net??null;
+  let uyumYorumu;
+  if(kritikNet===null){
+    uyumYorumu=`${ad}, ${hedefMeslek} hedefin için ${kritikDers} verisi yok — bu dersi mutlaka analiz ettir.`;
+  } else if(uyumPct>=75){
+    uyumYorumu=`${ad}, ${hedefMeslek} hedefin için sayılar umut verici. ${kritikDers} netini (${kritikNet.toFixed(1)}) korursan bu hedef gerçekçi — ama rehavete kapılma.`;
+  } else if(uyumPct>=50){
+    uyumYorumu=`${ad}, ${hedefMeslek} için rakamlar orta seviyede. ${kritikDers} (net ${kritikNet.toFixed(1)}) bu meslek için belirleyici — haftaya 5 net daha hedefle.`;
+  } else {
+    uyumYorumu=`${ad}, açık konuşmak gerekirse ${hedefMeslek} için ${kritikDers} neti (${kritikNet.toFixed(1)}) yetersiz. Bu mesafenin kapanması mümkün ama ciddi efor gerekiyor. Bugün başla.`;
+  }
+
+  // ── 6. SIRALAMA SİMÜLASYONU ─────────────────────────────
+  function sirSim(net,snv){
+    const r = getYuzdelik(net, snv);
+    const kisi = r.kisi;
+    // Alt ve üst aralık: ±%10 band
+    const alt = Math.round(kisi * 0.9 / 1000) * 1000;
+    const ust = Math.round(kisi * 1.1 / 1000) * 1000;
+    function fmt(n){return n>=1000000?(n/1000000).toFixed(1)+' milyon':n.toLocaleString('tr-TR');}
+    return `~${fmt(alt)} – ${fmt(ust)}`;
+  }
+  const siralama = sirSim(toplamNet,sinav);
+
+  // ── 7. HAFTALIK PLAN (konu bazlı) ───────────────────────
+  const zayif  = [...sorted].slice(0,3).map(d=>d.name);
+  const gunler = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+
+  function anaKonu(dersAdi){
+    const d=dersler.find(x=>x.name===dersAdi);
+    if(!d)return dersAdi+' çalış';
+    const kod=sevKod(d.net);
+    const k=(dersKonular[dersAdi]?.[kod]||[])[0]||dersAdi;
+    return k;
+  }
+
+  const weekPlan = gunler.map((gun,i)=>{
+    const ana    = zayif[i%zayif.length];
+    const destek = zayif[(i+1)%zayif.length];
+    const anaK   = anaKonu(ana);
+    const destekK= anaKonu(destek);
+    if(i===4) return{day:gun,saatlik:[
+      {saat:'09:00-12:15',ders:sinav,aktivite:`Tam ${sinav} denemesi – sessiz ortamda`,tip:'soru'},
+      {saat:'13:00-14:30',ders:'Analiz',aktivite:'Hata analizi – yanlış soruları konulara göre listele',tip:'analiz'},
+      {saat:'14:30-15:30',ders:ana,aktivite:`${ana} – ${anaK} hata analizi`,tip:'analiz'}
+    ],tasks:[
+      {subject:sinav,desc:'Tam deneme sınavı',amount:'135 soru'},
+      {subject:'Analiz',desc:'Hata analizi – zayıf konuları listele',amount:'45 dk'}
+    ]};
+    if(i===6) return{day:gun,saatlik:[
+      {saat:'10:00-11:30',ders:ana,aktivite:`${ana} – ${anaK} derinlemesine tekrar`,tip:'soru'},
+      {saat:'11:45-13:00',ders:destek,aktivite:`${destek} – ${destekK} konu tekrarı`,tip:'soru'},
+      {saat:'14:00-14:30',ders:'Plan',aktivite:'Gelecek haftayı planla – zayıf konuları güncelle',tip:'analiz'}
+    ],tasks:[
+      {subject:ana,desc:`${anaK} derinlemesine tekrar`,amount:'2 saat'},
+      {subject:'Plan',desc:'Gelecek haftayı planla',amount:'30 dk'}
+    ]};
+    return{day:gun,saatlik:[
+      {saat:'16:00-17:30',ders:ana,aktivite:`${ana} – ${anaK} konu anlatımı (YouTube) + 25 soru`,tip:'video'},
+      {saat:'17:30-17:45',ders:'Mola',aktivite:'Kısa mola',tip:'mola'},
+      {saat:'17:45-19:15',ders:ana,aktivite:`${ana} – ${anaK} soru çözümü devam`,tip:'soru'},
+      {saat:'19:15-20:00',ders:'Mola',aktivite:'Yemek molası',tip:'mola'},
+      {saat:'20:00-21:00',ders:destek,aktivite:`${destek} – ${destekK} kısa tekrar + 20 soru`,tip:'soru'},
+      {saat:'21:00-21:30',ders:'Tekrar',aktivite:'Gün sonu hata analizi',tip:'analiz'}
+    ],tasks:[
+      {subject:ana,   desc:`${anaK} – YouTube + soru bankası`,amount:'35 soru'},
+      {subject:destek,desc:`${destekK} – kısa tekrar`,        amount:'20 soru'}
+    ]};
+  });
+
+  // ── 8. COACH NOTE ────────────────────────────────────────
+  const coachNote =
+    `Sevgili ${ad}, ${sinav} için toplam netin: ${toplamNet.toFixed(1)}. Tahmini sıralama: ${siralama}. ` +
+    (enZayif?`En acil konun: ${enZayif.name} (net ${enZayif.net.toFixed(1)}) — bu hafta oraya odaklan. `:'') +
+    (goodTopics.length>0?`${goodTopics[0].split('–')[0].trim()} güçlü, koru. `:'') +
+    `${hedefMeslek} hedefin var — rakamlar ne diyorsa onu söyledim. Şimdi çalışma zamanı. 🦉`;
+
+  // ── 9. RAPOR BAŞLIĞI ─────────────────────────────────────
+  const _raporBasligi = `
+    <div style="background:linear-gradient(135deg,rgba(245,200,66,0.08),rgba(46,184,176,0.05));border:1px solid var(--border2);border-radius:16px;padding:20px 22px;margin-bottom:16px;">
+      <div style="font-size:0.58rem;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">KoçAI Analiz Raporu</div>
+      <div style="font-family:'Lora',serif;font-size:1.05rem;font-weight:700;line-height:1.6;color:var(--text);">
+        Sevgili <span style="color:var(--gold)">${ad}</span>,<br>
+        <span style="font-size:0.88rem;font-weight:600;color:var(--muted2);">${sinav} Sınavı ve <em style="color:var(--gold3);font-style:normal;">${hedefMeslek}</em> Hedefin İçin</span>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:14px;padding:10px 14px;background:rgba(0,0,0,0.2);border-radius:10px;">
+        <div style="text-align:center;min-width:58px;">
+          <div style="font-size:1.5rem;font-weight:800;color:var(--gold);font-family:'Lora',serif;">${toplamNet.toFixed(1)}</div>
+          <div style="font-size:0.55rem;color:var(--muted2);letter-spacing:0.1em;text-transform:uppercase;">Toplam Net</div>
+        </div>
+        <div style="width:1px;height:36px;background:var(--border);flex-shrink:0;"></div>
+        <div>
+          <div style="font-size:0.65rem;font-weight:700;color:var(--muted2);margin-bottom:3px;letter-spacing:0.08em;text-transform:uppercase;">Tahmini Sıralama</div>
+          <div style="font-size:1rem;font-weight:700;color:var(--text);">${siralama}</div>
+        </div>
+      </div>
+    </div>`;
+
+  // ── 10. DATA OBJESİ DÖN ──────────────────────────────────
+  return{
+    exam:sinav, totalNet:toplamNet, subjects:dersler,
+    urgentTopics, mediumTopics, goodTopics,
+    kaynaklar,
+    kariyer:{
+      meslek:hedefMeslek,
+      aydinlik: katAydinlik[kategori],
+      golge:    katGolge[kategori],
+      uyum:     uyumPct,
+      yorum:    uyumYorumu
+    },
+    weekPlan, coachNote,
+    _raporBasligi
+  };
+}
+
+function animLoad(){
+  ['ls1','ls2','ls3','ls4','ls5'].forEach((id,i)=>setTimeout(()=>{
+    document.getElementById(id).className='act';
+    if(i>0)document.getElementById(['ls1','ls2','ls3','ls4','ls5'][i-1]).className='fin';
+  },i*1000));
+}
+
+// AI SYSTEM PROMPT - the full KoçAI brain
+// ── SINAVA YAKIN MOD ──
+function sinavaKalanGun() {
+  const exam = OB.exam || 'TYT/AYT';
+  const examKey = exam === 'YKS' ? 'TYT/AYT' : exam;
+  const tgt = S.dates[examKey] || S.dates['TYT/AYT'];
+  return Math.floor((tgt - new Date()) / 864e5);
+}
+
+function isSinavaYakin() {
+  return sinavaKalanGun() <= 30;
+}
+
+function buildSysPrompt(){
+  const hasOkul = ['8','9','10','11','12'].includes(OB.cls);
+  const okulInfo = hasOkul && OB.okulGiris && OB.okulCikis
+    ? 'Okul saatleri: ' + OB.okulGiris + ' - ' + OB.okulCikis + ' (bu saatler arasi calisma yapilamaz)'
+    : 'Okul saati yok, tum gun musait';
+
+  const saatPlan = hasOkul
+    ? '- Okul oncesi (' + OB.okulGiris + " dan once): 1-1.5 saat sabah calismasi\n- Okul (" + OB.okulGiris + '-' + OB.okulCikis + "): Calisma YOK\n- Okul sonrasi (" + OB.okulCikis + "'dan sonra): Kalan saatleri bol"
+    : '- Sabahtan aksama bol, her 90 dakikada 15 dakika mola';
+
+  const kalanGun = sinavaKalanGun();
+  const yakinMod = kalanGun <= 30;
+  // yakinNot artik yakinDeneme olarak yukarida tanimlandi
+
+  // Alan bazlı ödev dağılımı
+  const alanDagilim = {
+    'sayisal': 'SAYISAL (MF) DAĞILIM: Matematik %40, Fizik %20, Kimya %20, Biyoloji %10, Türkçe %10. Matematik en fazla soru. Geometri, Türev, İntegral öncelikli.',
+    'sozel': 'SÖZEL (TS) DAĞILIM: Türkçe %35, Tarih %25, Coğrafya %20, Felsefe %15, Matematik %5. Paragraf ve edebi türler öncelikli.',
+    'esit': 'EŞİT AĞIRLIK (EA) DAĞILIM: Türkçe %30, Matematik %30, Tarih %15, Coğrafya %15, Felsefe %10. İkisi dengeli tutulmalı.',
+    'dil': 'DİL DAĞILIM: İngilizce/Yabancı Dil %70, Türkçe %20, Matematik %10. Kelime, gramer, okuma öncelikli.',
+    'tyt': 'TYT DAĞILIM: Türkçe %30, Matematik %30, Fen %20, Sosyal %20. Dengeli.',
+    'lisans': 'KPSS LİSANS DAĞILIM: GK (Tarih, Coğrafya, Vatandaşlık, Güncel) %40, GY (Türkçe, Matematik, Geometri) %60. Mantık ve muhakeme kritik.',
+    'onlisans': 'KPSS ÖNLİSANS DAĞILIM: Türkçe %30, Matematik %30, Atatürk İlkeleri %20, Vatandaşlık %20.',
+    'lgs': 'LGS DAĞILIM: Matematik %30, Türkçe %30, Fen %20, İnkılap %10, İngilizce %10.',
+  };
+  const dagilim = alanDagilim[OB.field] || alanDagilim['tyt'];
+
+  // KPSS konuları
+  const kpssKonular = OB.exam === 'KPSS' ? `
+KPSS ÖZEL KONULAR:
+- Türkçe: Paragraf, Dil Bilgisi, Sözcük Türleri, Cümle Yapısı
+- Matematik: Temel işlemler, Oran-Orantı, Faiz, Yaş, Sayılar, Mantık
+- Tarih: Osmanlı, Cumhuriyet, Atatürk İlkeleri
+- Coğrafya: Türkiye Coğrafyası, Nüfus, Ekonomi
+- Vatandaşlık: Anayasa, Hukuk, Yönetim
+- Güncel Olaylar: Son 1 yılın önemli gelişmeleri` : '';
+
+  // Sinava yakin deneme modu
+  const kalanGun2 = sinavaKalanGun();
+  const yakinDeneme = kalanGun2 <= 30 ? `
+SON ${kalanGun2} GÜN - SERİ DENEME MODU:
+- Günlük ${OB.hours} saat çalışmanın 5 saati DENEME (sabah TYT, öğleden sonra AYT/alan)
+- Kalan ${Math.max(0, parseInt(OB.hours||8) - 5)} saat: SADECE hata analizi ve eksik konu tekrarı
+- YENİ KONU ÇALIŞMA YOK — sadece deneme + analiz döngüsü
+- Her denemeden sonra yanlış soruları mutlaka çöz` : '';
+
+  return 'Sen KocAI sin - Turkiye nin en donust ve etkili yapay zeka sinav kocu.\n\n' +
+    'OGRENCI PROFILI:\n' +
+    '- Ad: ' + (OB.name||'Ogrenci') + '\n' +
+    '- Sinif: ' + OB.cls + '\n' +
+    '- Sinav: ' + OB.exam + '\n' +
+    '- Hedef Meslek: ' + (OB.meslek||'Belirtilmedi') + '\n' +
+    '- Hedef Universite: ' + (OB.univ||'Belirtilmedi') + '\n' +
+    '- Gunluk Calisma: ' + OB.hours + ' saat\n' +
+    '- ' + okulInfo + '\n\n' +
+    'KAYNAK SEVIYELENDIRME (ZORUNLU KURAL):\n' +
+    '- Net < 5: Baslangic: Antrenmanlarla Matematik, Aktif Yayinlari, Kafa Dengi\n' +
+    '- Net 5-15: Orta: Bilgi Sarmal, 345 Yayinlari, Esen Yayinlari, Limit Yayinlari\n' +
+    '- Net > 15: Ileri: Apotemi, Orijinal Yayinlari, Aydin Yayinlari, Karekok\n\n' +
+    'YOUTUBE HOCA ONERILERI (konuya gore 3-5 hoca oner):\n' +
+    '- Matematik: Matematik Delisi, Ozel Ders TV, Matematigin Puf Noktalari, Birol Hoca, Kadir Hoca\n' +
+    '- Turkce: Turkce Ogretmeni, Turkce Hocam, Ogretmen Akademisi, Dil ve Anlatim\n' +
+    '- Fizik: Fizik Lab, Mehmet Hoca Fizik, Benim Hocam Fizik, Fizik Delisi\n' +
+    '- Kimya: Serdar Hoca, Kimya Kupu, Kimya Hocam, Benim Hocam Kimya\n' +
+    '- Biyoloji: Biyoloji Kafasi, Ogretmen Akademisi, Benim Hocam Biyoloji\n' +
+    '- Tarih: Tarih Kafasi, Benim Hocam Tarih\n' +
+    '- Cografya: Cografya Hocam, Benim Hocam Cografya\n' +
+    '- Felsefe: Felsefe Hocam, Benim Hocam Felsefe\n\n' +
+    'SAAT BAZLI PLAN:\n' + saatPlan + '\n' +
+    '- Her konuyu: 1) YouTube konu anlatimi 2) Soru cozumu 3) Hata analizi seklinde planla\n' +
+    '- Zayif konulara daha fazla saat ver, guclu konulara kisa tekrar\n' +
+    '- Hafta ici ve hafta sonu ayri plan yap\n\n' +
+    'DONURLUK KURALLARI (COK ONEMLI):\n' +
+    '- Poliyannaci OLMA. Net dusukse bunu acikca soyle.\n' +
+    '- "Harika gidiyorsun" deme, rakamlar ne diyorsa onu soyle.\n' +
+    '- Net < 5 ise: Bu konuda ciddi bir temel sorunu var de.\n' +
+    '- Net 5-10 ise: Orta seviyesin, gelisime acik de.\n' +
+    '- Hedef meslek ile mevcut net uyumsuzsa donustce soyle.\n' +
+    '- Ama her zaman cozum odakli bitir.\n\n' +
+    'TUTARLILIK: Zayif konular her zaman once, ayni net icin ayni kaynak seviyesi.\n\n' +
+    'ALAN BAZLI ODEV DAGILIMI:\n' + dagilim + '\n\n' +
+    kpssKonular + yakinDeneme;
+}
+
+const JTPL = `{
+  "exam": "TYT",
+  "totalNet": 62.5,
+  "subjects": [{"name": "Türkçe", "net": 24, "dogru": 28, "yanlis": 4}],
+  "urgentTopics": ["Kimya – Asit-Baz", "Coğrafya – İklim", "Felsefe – Epistemoloji"],
+  "mediumTopics": ["Fizik – Dalgalar", "Tarih – Atatürk İlkeleri", "Matematik – Olasılık"],
+  "goodTopics": ["Türkçe – Paragraf", "Biyoloji – Hücre", "Matematik – Temel İşlemler"],
+  "kaynaklar": [
+    {"ders": "Kimya", "seviye": "Başlangıç", "kitaplar": ["Aktif Kimya Fasikülleri"], "youtube": ["Serdar Hoca", "Kimya Küpü", "Kimya Hocam", "Benim Hocam Kimya"], "neden": "Net 3.5 — temel eksik. Önce konu anlat sonra soru."},
+    {"ders": "Matematik", "seviye": "Orta", "kitaplar": ["345 Matematik", "Bilgi Sarmal"], "youtube": ["Matematik Delisi", "Birol Hoca", "Özel Ders TV", "Kadir Hoca"], "neden": "Net 15 — orta seviye. 345 sınav formatına en yakın."},
+    {"ders": "Türkçe", "seviye": "İleri", "kitaplar": ["Limit Türkçe", "Apotemi Türkçe"], "youtube": ["Türkçe Öğretmeni", "Turkce Hocam", "Öğretmen Akademisi"], "neden": "Net 24 güçlü — zorlayıcı soru tarzına geç."}
+  ],
+  "kariyer": {
+    "meslek": "Yazılım Mühendisi",
+    "aydinlik": ["Yaratıcı problem çözme", "Yüksek maaş", "Uzaktan çalışma"],
+    "golge": ["Yoğun matematiksel mantık", "Deadline baskısı", "Sürekli öğrenme zorunluluğu"],
+    "uyum": 72,
+    "yorum": "Dürüst değerlendirme — rakamları saklamadan söyle, hedefle uyumu gerçekçi analiz et."
+  },
+  "weekPlan": [
+    {"day": "Pazartesi", "saatlik": [{"saat": "06:00-07:15", "ders": "Kimya", "aktivite": "Asit-Baz YouTube (Serdar Hoca)", "tip": "video"}, {"saat": "07:30-15:30", "ders": "Okul", "aktivite": "Okul zamanı", "tip": "okul"}, {"saat": "16:00-17:30", "ders": "Kimya", "aktivite": "Aktif Fasiküller s.45-60 — 30 soru", "tip": "soru"}, {"saat": "17:45-19:15", "ders": "Matematik", "aktivite": "Olasılık (Matematik Delisi) + 20 soru", "tip": "video"}, {"saat": "20:00-21:30", "ders": "Türkçe", "aktivite": "Paragraf soru bankası — 30 soru", "tip": "soru"}, {"saat": "21:30-22:00", "ders": "Tekrar", "aktivite": "Hata analizi + not al", "tip": "analiz"}], "tasks": [{"subject": "Kimya", "desc": "Asit-Baz (Serdar Hoca YouTube + Aktif Fasiküller)", "amount": "30 soru"}, {"subject": "Matematik", "desc": "Olasılık (Matematik Delisi + 345)", "amount": "20 soru"}, {"subject": "Türkçe", "desc": "Paragraf soru bankası", "amount": "30 soru"}]},
+    {"day": "Salı", "saatlik": [], "tasks": [{"subject": "Fizik", "desc": "Dalgalar (Fizik Lab YouTube + Esen Yayınları)", "amount": "25 soru"}, {"subject": "Kimya", "desc": "Asit-Baz tekrar + yeni konuya geç", "amount": "25 soru"}]},
+    {"day": "Çarşamba", "saatlik": [], "tasks": [{"subject": "Coğrafya", "desc": "İklim tipleri (Coğrafya Hocam YouTube)", "amount": "25 soru"}, {"subject": "Felsefe", "desc": "Bilgi Felsefesi özet", "amount": "15 soru"}]},
+    {"day": "Perşembe", "saatlik": [], "tasks": [{"subject": "Matematik", "desc": "Fonksiyonlar (345 Yayınları)", "amount": "40 soru"}, {"subject": "Tarih", "desc": "Atatürk dönemi tekrar", "amount": "20 soru"}]},
+    {"day": "Cuma", "saatlik": [], "tasks": [{"subject": "TYT", "desc": "Tam deneme sınavı", "amount": "135 soru"}, {"subject": "Analiz", "desc": "Hata analizi — hangi konular zayif", "amount": "45 dk"}]},
+    {"day": "Cumartesi", "saatlik": [], "tasks": [{"subject": "Kimya", "desc": "Hafta boyunca hata yapılan sorular tekrar", "amount": "30 soru"}, {"subject": "Matematik", "desc": "Zor soru çözümü", "amount": "40 soru"}]},
+    {"day": "Pazar", "saatlik": [], "tasks": [{"subject": "Tekrar", "desc": "Haftanın en zayıf 2 konusu — derinlemesine calis", "amount": "2 saat"}, {"subject": "Plan", "desc": "Gelecek haftayı planla", "amount": "30 dk"}]}
+  ],
+  "coachNote": "Dürüst ama çözüm odaklı not. Rakamları saklamadan söyle."
+}`;
+
+function getApiKey(){
+  return localStorage.getItem('k_apikey')||'';
+}
+
+async function anPhoto(){
+  const key=getApiKey();
+  if(!key) throw new Error('API_KEY_MISSING');
+
+  // ADIM 1: Fotoğraftan sadece netleri oku (basit JSON)
+  const netPrompt=`Bu sınav sonuç karnesi fotoğrafındaki ders netlerini oku.
+Sadece şu JSON formatında ver, başka hiçbir şey yazma:
+{"Türkçe":0,"Matematik":0,"Fizik":0,"Kimya":0,"Biyoloji":0,"Tarih":0,"Coğrafya":0,"Felsefe":0,"Din Kültürü":0}
+Fotoğrafta olmayan dersler 0 kalır. Ondalık kullan (örn: 26.25). TYT ve AYT varsa toplamları yaz.`;
+
+  const res=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "x-api-key":key,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body:JSON.stringify({
+      model:"claude-sonnet-4-6",
+      max_tokens:300,
+      messages:[{role:"user",content:[
+        {type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},
+        {type:"text",text:netPrompt}
+      ]}]
+    })
+  });
+
+  const d=await res.json();
+  if(d.error) throw new Error(d.error.message);
+  const raw=(d.content?.map(c=>c.text||'').join('')||'').replace(/```json|```/g,'').trim();
+  if(!raw) throw new Error('Fotoğraftan veri okunamadı');
+
+  const netler=JSON.parse(raw);
+
+  // ADIM 2: Okunan netleri forma doldur
+  let okunan=0;
+  SUBJS.forEach(s=>{
+    const el=document.getElementById('ni-'+s.n);
+    if(!el) return;
+    const v=netler[s.n];
+    if(v!==undefined&&v!==0){
+      el.value=parseFloat(v.toFixed(2));
+      okunan++;
+    }
+  });
+
+  if(okunan===0) throw new Error('Fotoğraftaki netler okunamadı. Elle gir.');
+
+  // ADIM 3: hesapla() ile yerel analiz yap
+  return hesapla();
+}
+
+async function anManual(){
+  const key=getApiKey();
+  if(!key) throw new Error('API_KEY_MISSING');
+  let tot=0;
+  const subs=SUBJS.map(s=>{const v=parseFloat(document.getElementById('ni-'+s.n)?.value)||0;tot+=v;return{name:s.n,net:v};});
+  const res=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "x-api-key":key,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body:JSON.stringify({
+      model:"claude-sonnet-4-6",max_tokens:2000,
+      system: buildSysPrompt(),
+      messages:[{role:"user",content:`Net bilgileri: ${subs.map(s=>s.name+':'+s.net).join(', ')}. Toplam: ${tot.toFixed(1)}. Tam analiz yap. SADECE JSON:\n${JTPL}`}]
+    })
+  });
+  const d=await res.json();
+  if(d.error) throw new Error(d.error.message);
+  const raw=(d.content?.map(c=>c.text||'').join('')||'').replace(/```json|```/g,'').trim();
+  if(!raw) throw new Error('API boş yanıt döndürdü');
+  return JSON.parse(raw);
+}
+
+function demoData(){
+  const hasOkul=['8','9','10','11','12'].includes(OB.cls);
+  const og=OB.okulGiris||'07:30', oc=OB.okulCikis||'15:30';
+  const sabahPlan=hasOkul?[
+    {saat:'06:00-07:15',ders:'Kimya',aktivite:'Asit-Baz YouTube konu anlatimi (Serdar Hoca)',tip:'video'},
+    {saat:og+'-'+oc,ders:'Okul',aktivite:'Okul zamani',tip:'okul'},
+    {saat:'16:00-17:30',ders:'Kimya',aktivite:'Aktif Fasikuller - 30 soru (Asit-Baz)',tip:'soru'},
+    {saat:'17:30-17:45',ders:'Mola',aktivite:'Kisa mola',tip:'mola'},
+    {saat:'17:45-19:15',ders:'Matematik',aktivite:'Olasilik YouTube (Matematik Delisi) + 20 soru',tip:'video'},
+    {saat:'19:15-20:00',ders:'Mola',aktivite:'Yemek molasi',tip:'mola'},
+    {saat:'20:00-21:30',ders:'Turkce',aktivite:'Paragraf soru bankasi - 30 soru',tip:'soru'},
+    {saat:'21:30-22:00',ders:'Tekrar',aktivite:'Hata analizi + not al',tip:'analiz'},
+  ]:[
+    {saat:'08:00-09:30',ders:'Kimya',aktivite:'Asit-Baz YouTube (Serdar Hoca)',tip:'video'},
+    {saat:'09:30-09:45',ders:'Mola',aktivite:'Kisa mola',tip:'mola'},
+    {saat:'09:45-11:15',ders:'Kimya',aktivite:'Aktif Fasikuller - 30 soru',tip:'soru'},
+    {saat:'11:15-12:45',ders:'Matematik',aktivite:'Olasilik (Matematik Delisi + 345) - 40 soru',tip:'soru'},
+    {saat:'12:45-13:30',ders:'Mola',aktivite:'Ogle molasi',tip:'mola'},
+    {saat:'13:30-15:00',ders:'Turkce',aktivite:'Paragraf soru bankasi - 30 soru',tip:'soru'},
+    {saat:'15:00-16:30',ders:'Fizik',aktivite:'Dalgalar YouTube (Fizik Lab) + 25 soru',tip:'video'},
+    {saat:'16:30-17:00',ders:'Tekrar',aktivite:'Hata analizi + not al',tip:'analiz'},
+  ];
+  return{
+    exam:'TYT',totalNet:62.75,
+    subjects:[{name:'Turkce',net:24.5},{name:'Matematik',net:15.25},{name:'Fizik',net:5},{name:'Kimya',net:3.5},{name:'Biyoloji',net:6.5},{name:'Tarih',net:4},{name:'Cografya',net:2.5},{name:'Felsefe',net:1.5}],
+    urgentTopics:['Kimya - Asit-Baz','Cografya - Iklim','Felsefe - Epistemoloji'],
+    mediumTopics:['Fizik - Dalgalar','Tarih - Ataturk Ilkeleri','Matematik - Olasilik'],
+    goodTopics:['Turkce - Paragraf','Biyoloji - Hucre','Matematik - Temel Islemler'],
+    kaynaklar:[
+      {ders:'Kimya',seviye:'Baslangic',kitaplar:['Aktif Kimya Fasikuller','Kafa Dengi Kimya'],youtube:['Serdar Hoca','Kimya Kupu','Kimya Hocam','Benim Hocam Kimya'],neden:'Net 3.5 - ciddi temel eksikligi. Apotemi degil, once Aktif Fasikuller.'},
+      {ders:'Matematik',seviye:'Orta',kitaplar:['345 Matematik','Bilgi Sarmal Matematik'],youtube:['Matematik Delisi','Birol Hoca','Ozel Ders TV','Kadir Hoca Matematik'],neden:'Net 15.25 - orta seviye. 345 sinav formatina en yakin kitap.'},
+      {ders:'Turkce',seviye:'Ileri',kitaplar:['Limit Turkce','Apotemi Turkce'],youtube:['Turkce Ogretmeni','Turkce Hocam','Ogretmen Akademisi'],neden:'Net 24.5 - guclu. Zorlayici soru tipine gec.'},
+    ],
+    kariyer:{
+      meslek:OB.meslek||'Yazilim Muhendisi',
+      aydinlik:['Yuksek yaraticilik alani','Guclu is imkanlari','Uzaktan calisma esnekligi'],
+      golge:['Yogun matematiksel mantik gerektiriyor','Deadline baskisi sureklilesebiiliyor','Teknoloji surekli degisiyor'],
+      uyum:68,
+      yorum:(OB.name||'Ogrenci')+', sana donust soyleyeyim: Yazilim icin Matematik temeli su an yetersiz. Net 15 bu hedef icin dusuk. Ama degistirilebilir.'
+    },
+    weekPlan:[
+      {day:'Pazartesi',saatlik:sabahPlan,tasks:[{subject:'Kimya',desc:'Asit-Baz (Serdar Hoca YouTube + Aktif Fasikuller)',amount:'30 soru'},{subject:'Matematik',desc:'Olasilik (Matematik Delisi + 345)',amount:'40 soru'},{subject:'Turkce',desc:'Paragraf soru bankasi',amount:'30 soru'}]},
+      {day:'Sali',saatlik:[
+        {saat:'16:00-17:30',ders:'Fizik',aktivite:'Dalgalar YouTube (Fizik Lab) + 25 soru',tip:'video'},
+        {saat:'17:30-17:45',ders:'Mola',aktivite:'Kisa mola',tip:'mola'},
+        {saat:'17:45-19:15',ders:'Kimya',aktivite:'Asit-Baz devam - Aktif Fasikuller',tip:'soru'},
+        {saat:'19:15-20:00',ders:'Mola',aktivite:'Yemek molasi',tip:'mola'},
+        {saat:'20:00-21:00',ders:'Tekrar',aktivite:'Gun sonu hata analizi',tip:'analiz'},
+      ],tasks:[{subject:'Fizik',desc:'Dalgalar (Fizik Lab YouTube + Esen Yayinlari)',amount:'25 soru'},{subject:'Kimya',desc:'Asit-Baz devam',amount:'25 soru'}]},
+      {day:'Carsamba',saatlik:[
+        {saat:'16:00-17:30',ders:'Cografya',aktivite:'Iklim tipleri (Cografya Hocam YouTube) + 25 soru',tip:'video'},
+        {saat:'17:30-17:45',ders:'Mola',aktivite:'Kisa mola',tip:'mola'},
+        {saat:'17:45-18:30',ders:'Felsefe',aktivite:'Bilgi Felsefesi ozet + 15 soru',tip:'soru'},
+        {saat:'18:30-19:15',ders:'Mola',aktivite:'Yemek molasi',tip:'mola'},
+        {saat:'19:15-20:45',ders:'Matematik',aktivite:'Olasiliik tekrar - 30 soru (345)',tip:'soru'},
+        {saat:'20:45-21:15',ders:'Tekrar',aktivite:'Gun sonu hata analizi',tip:'analiz'},
+      ],tasks:[{subject:'Cografya',desc:'Iklim tipleri (Cografya Hocam YouTube)',amount:'25 soru'},{subject:'Felsefe',desc:'Bilgi Felsefesi ozet',amount:'15 soru'}]},
+      {day:'Persembe',saatlik:[
+        {saat:'16:00-17:30',ders:'Matematik',aktivite:'Fonksiyonlar YouTube (Matematik Delisi) + 25 soru',tip:'video'},
+        {saat:'17:30-17:45',ders:'Mola',aktivite:'Kisa mola',tip:'mola'},
+        {saat:'17:45-19:15',ders:'Matematik',aktivite:'Fonksiyonlar - 345 Yayinlari 20 soru daha',tip:'soru'},
+        {saat:'19:15-20:00',ders:'Mola',aktivite:'Yemek molasi',tip:'mola'},
+        {saat:'20:00-21:00',ders:'Tarih',aktivite:'Ataturk donemi tekrar + 20 soru',tip:'soru'},
+        {saat:'21:00-21:30',ders:'Tekrar',aktivite:'Gun sonu hata analizi',tip:'analiz'},
+      ],tasks:[{subject:'Matematik',desc:'Fonksiyonlar (345 Yayinlari)',amount:'45 soru'},{subject:'Tarih',desc:'Ataturk donemi tekrar',amount:'20 soru'}]},
+      {day:'Cuma',saatlik:[
+        {saat:'09:00-12:15',ders:'TYT',aktivite:'Tam deneme sinavi (135 soru) - sessiz ortamda',tip:'soru'},
+        {saat:'12:15-13:00',ders:'Mola',aktivite:'Ogle molasi',tip:'mola'},
+        {saat:'13:00-14:30',ders:'Analiz',aktivite:'Hata analizi - yanlis soruları coz',tip:'analiz'},
+        {saat:'14:30-15:30',ders:'Kimya',aktivite:'En cok yanlis yapilan konuyu tekrar et',tip:'analiz'},
+      ],tasks:[{subject:'TYT',desc:'Tam deneme sinavi',amount:'135 soru'},{subject:'Analiz',desc:'Hata analizi - zayif konulari listele',amount:'45 dk'}]},
+      {day:'Cumartesi',saatlik:[
+        {saat:'09:00-10:30',ders:'Kimya',aktivite:'Hata yapilan sorulari tekrar - Aktif Fasikuller',tip:'soru'},
+        {saat:'10:30-10:45',ders:'Mola',aktivite:'Kisa mola',tip:'mola'},
+        {saat:'10:45-12:15',ders:'Matematik',aktivite:'Zor soru cozumu - 345 Yayinlari',tip:'soru'},
+        {saat:'12:15-13:00',ders:'Mola',aktivite:'Ogle molasi',tip:'mola'},
+        {saat:'13:00-14:30',ders:'Fizik',aktivite:'Dalgalar tekrar + yeni konuya gec',tip:'soru'},
+        {saat:'14:30-15:00',ders:'Tekrar',aktivite:'Hafta degerlendirmesi',tip:'analiz'},
+      ],tasks:[{subject:'Kimya',desc:'Hata yapilan sorular tekrar',amount:'30 soru'},{subject:'Matematik',desc:'Zor soru cozumu',amount:'40 soru'}]},
+      {day:'Pazar',saatlik:[
+        {saat:'10:00-11:30',ders:'Tekrar',aktivite:'Haftanin en zayif 2 konusu - derinlemesine calis',tip:'soru'},
+        {saat:'11:30-11:45',ders:'Mola',aktivite:'Kisa mola',tip:'mola'},
+        {saat:'11:45-13:00',ders:'Tekrar',aktivite:'2. zayif konu - soru coz',tip:'soru'},
+        {saat:'13:00-14:00',ders:'Mola',aktivite:'Ogle molasi',tip:'mola'},
+        {saat:'14:00-14:30',ders:'Plan',aktivite:'Gelecek haftayi planla ve hedeflerini yaz',tip:'analiz'},
+      ],tasks:[{subject:'Tekrar',desc:'Haftanin en zayif 2 konusu - derinlemesine',amount:'2 saat'},{subject:'Plan',desc:'Gelecek haftayi planla',amount:'30 dk'}]}
+    ],
+    coachNote:(OB.name||'Ogrenci')+', Turkce ust seviye - bunu koru. Kimya net 3.5 ciddi uyari - once Aktif Fasikuller. Matematik 15 net yazilim hedefi icin dusuk, bu hafta en kritik dersin. Basla! Yaparsın. 🦉'
+  };
+}
+
+
+function saveToHistory(data) {
+  try {
+    const hist = safeJSON(LS.get('k_history', '[]'), []);
+    const yuz  = getYuzdelik(data.totalNet, data.exam||OB.exam||'TYT');
+    hist.push({
+      date:    new Date().toISOString(),
+      net:     data.totalNet,
+      exam:    data.exam||OB.exam||'TYT',
+      kisi:    yuz.kisi,
+      yuzde:   yuz.yuzde,
+      subjects:(data.subjects||[]).map(s=>({name:s.name,net:s.net}))
+    });
+    if(hist.length > 20) hist.shift();
+    LS.set('k_history', JSON.stringify(hist));
+    renderHaftalikOzet();
+  } catch(e) {}
+}
+
+function renderRes(data){
+  document.getElementById('loadArea').classList.remove('on');
+  document.getElementById('resArea').classList.add('on');
+  saveToHistory(data);
+
+  // Eski kartları temizle
+  const old=document.getElementById('_kocaiHeader');if(old)old.remove();
+  const oldY=document.getElementById('_yuzdelikKartWrap');if(oldY)oldY.remove();
+  if(data._raporBasligi){const h=document.createElement('div');h.id='_kocaiHeader';h.innerHTML=data._raporBasligi;document.getElementById('scG').parentNode.insertBefore(h,document.getElementById('scG'));}
+
+  // Scores
+  const avg=(data.totalNet/data.subjects.length).toFixed(1);
+  document.getElementById('scG').innerHTML=[
+    {v:data.totalNet,l:'Toplam Net',c:'var(--gold)'},
+    {v:avg,l:'Ortalama/Ders',c:'var(--success)'},
+    {v:data.urgentTopics.length,l:'Öncelikli Konu',c:'var(--danger)'},
+    {v:data.exam,l:'Sınav',c:'var(--muted2)'},
+  ].map(x=>`<div class="sc-tile"><div class="sc-v" style="color:${x.c}">${x.v}</div><div class="sc-l">${x.l}</div></div>`).join('');
+
+  // Yüzdelik dilim kartı
+  document.getElementById('scG').insertAdjacentHTML('afterend', '<div id="_yuzdelikKartWrap">'+yuzdelikKart(data.totalNet, data.exam||OB.exam||'TYT')+'</div>');
+
+  // Kariyer
+  const k=data.kariyer||{};
+  document.getElementById('kariyerCard').innerHTML=`
+    <div class="kariyer-top">
+      <span style="font-size:1.8rem;">🎯</span>
+      <div>
+        <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold3);margin-bottom:3px;">Kariyer & Gölge Analizi</div>
+        <div class="kariyer-meslek">${k.meslek||OB.meslek||'—'}</div>
+      </div>
+    </div>
+    <div class="kar-row">
+      <div class="kar-side kar-ayd">
+        <div class="kar-side-ttl">☀️ Aydınlık Taraf</div>
+        <div class="kar-side-body">${(k.aydinlik||[]).map(a=>`· ${a}`).join('<br>')}</div>
+      </div>
+      <div class="kar-side kar-glg">
+        <div class="kar-side-ttl">🌑 Gölge Taraf</div>
+        <div class="kar-side-body">${(k.golge||[]).map(g=>`· ${g}`).join('<br>')}</div>
+      </div>
+    </div>
+    <div class="uyum-bar-wrap">
+      <div class="uyum-lbl">Mizaç Uyumu: <strong style="color:var(--gold)">${k.uyum||0}%</strong></div>
+      <div class="uyum-bar"><div class="uyum-fill" style="width:0%" id="uyumFill"></div></div>
+    </div>
+    <div style="font-size:0.82rem;color:var(--muted2);margin-top:12px;line-height:1.6;">${k.yorum||''}</div>
+  `;
+  setTimeout(()=>{const f=document.getElementById('uyumFill');if(f)f.style.width=(k.uyum||0)+'%';},200);
+
+  // Topics
+  document.getElementById('urgT').innerHTML=(data.urgentTopics||[]).map(t=>`<div class="tc urg">⬤ ${t}</div>`).join('');
+  document.getElementById('medT').innerHTML=(data.mediumTopics||[]).map(t=>`<div class="tc med">⬤ ${t}</div>`).join('');
+  document.getElementById('gooT').innerHTML=(data.goodTopics||[]).map(t=>`<div class="tc goo">⬤ ${t}</div>`).join('');
+
+  // Kaynaklar
+  const sevMap={Başlangıç:'k-bsl',Orta:'k-ort',İleri:'k-ilr'};
+  const sevEmoji={Başlangıç:'🟢',Orta:'🟡',İleri:'🔴'};
+  document.getElementById('kaynakArea').innerHTML=(data.kaynaklar||[]).map(k=>`
+    <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+      <div style="font-size:0.75rem;font-weight:700;color:var(--muted2);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">${k.ders}</div>
+      <div class="kaynak-g">
+        <div class="kaynak-chip ${sevMap[k.seviye]||'k-ort'}">${sevEmoji[k.seviye]||'📚'} ${k.seviye} Seviye</div>
+        ${(k.kitaplar||[]).map(b=>`<div class="kaynak-chip k-ort">📚 ${b}</div>`).join('')}
+      </div>
+      ${k.youtube&&k.youtube.length ? `
+      <div style="margin-top:10px;">
+        <div style="font-size:0.65rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#ff4444;margin-bottom:6px;">▶ YouTube Hoca Önerileri</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${k.youtube.map(y=>`<div style="padding:5px 12px;border-radius:8px;background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.25);color:#ff8888;font-size:0.74rem;font-weight:500;">▶ ${y}</div>`).join('')}
+        </div>
+      </div>` : ''}
+      <div style="font-size:0.76rem;color:var(--muted);line-height:1.6;padding-left:4px;margin-top:8px;">💡 ${k.neden||''}</div>
+    </div>`).join('');
+
+  // Weekly plan
+  const tipRenk={video:'rgba(255,68,68,0.15)',soru:'rgba(245,200,66,0.1)',mola:'rgba(100,100,100,0.1)',okul:'rgba(46,184,176,0.1)',analiz:'rgba(58,158,106,0.1)'};
+  const tipIkon={video:'▶',soru:'📝',mola:'☕',okul:'🏫',analiz:'🔍'};
+
+  document.getElementById('weekP').innerHTML=(data.weekPlan||[]).map((day,i)=>`
+    <div class="day-c">
+      <div class="day-h"><div class="day-nb">${String(i+1).padStart(2,'0')}</div><div class="day-nm">${day.day}</div></div>
+      <div class="day-b">
+        ${day.saatlik&&day.saatlik.length ? `
+          <div style="margin-bottom:12px;">
+            <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--teal);margin-bottom:8px;">⏰ Saat Bazlı Program</div>
+            ${day.saatlik.map(s=>`
+              <div style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:9px;background:${tipRenk[s.tip]||'rgba(255,255,255,0.03)'};margin-bottom:5px;">
+                <span style="font-size:0.9rem;">${tipIkon[s.tip]||'•'}</span>
+                <span style="font-size:0.72rem;font-weight:700;color:var(--muted);min-width:90px;">${s.saat}</span>
+                <span style="font-size:0.78rem;color:var(--text);flex:1;">${s.aktivite}</span>
+              </div>`).join('')}
+          </div>` : ''}
+        ${(day.tasks||[]).map(t=>`
+          <div class="plan-r">
+            <span class="ps">${t.subject}</span>
+            <span class="pd">${t.desc}</span>
+            <span class="pa">${t.amount}</span>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  // Coach note typewriter
+  const el=document.getElementById('cnTxt');
+  el.innerHTML='<span class="cursor"></span>';
+  let i=0;const note=data.coachNote||'';const cur=el.querySelector('.cursor');
+  const ti=setInterval(()=>{if(i<note.length){cur.before(note.charAt(i++));}else{cur.remove();clearInterval(ti);}},16);
+}
+
+function resetAn(){
+  b64=null;manOn=false;
+  const old=document.getElementById('_kocaiHeader');if(old)old.remove();
+  document.getElementById('upForm').style.display='block';
+  document.getElementById('resArea').classList.remove('on');
+  document.getElementById('loadArea').classList.remove('on');
+  document.getElementById('uz').classList.remove('has');
+  document.getElementById('uz').querySelector('.upload-ttl').textContent='Fotoğraf Yükle';
+  document.getElementById('fp').style.display='none';
+  document.getElementById('manArea').style.display='none';
+  document.getElementById('mArr').textContent='▸';
+  document.getElementById('startB').disabled=true;
+  SUBJS.forEach(s=>{const el=document.getElementById('ni-'+s.n);if(el)el.value='';});
+}
+
+// ── PWA ──
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('pwaBtn');if(b)b.style.display='flex';});
+window.addEventListener('appinstalled',()=>{deferredPrompt=null;const b=document.getElementById('pwaBtn');if(b)b.style.display='none';});
+async function installPWA(){
+  if(!deferredPrompt){alert("iOS: Safari'de aç → Paylaş → Ana Ekrana Ekle 🦉");return;}
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt=null;
+  const b=document.getElementById('pwaBtn');if(b)b.style.display='none';
+}
+if('serviceWorker'in navigator){
+  window.addEventListener('load',()=>{
+    const sw=`const C='kocai-v1';self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll(['/']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+    const blob=new Blob([sw],{type:'application/javascript'});
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
+
+// ═══════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════
+if(saved){
+  initApp();
+  if(S.cfg.notif&&Notification.permission==='granted')schedNotif();
+}
+</script>
+</body>
+</html>
