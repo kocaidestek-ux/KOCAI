@@ -1,29 +1,50 @@
+const https = require('https');
+
 exports.handler = async function(event) {
   if(event.httpMethod !== 'POST') {
     return {statusCode:405, body:'Method Not Allowed'};
   }
+
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if(!apiKey) {
-    return {statusCode:500, body:JSON.stringify({error:'API key not configured'})};
+    return {statusCode:500, body:JSON.stringify({error:{message:'API key not configured'}})};
   }
-  try {
-    const body = JSON.parse(event.body);
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify(body)
-    });
-    const data = await response.json();
-    return {
-      statusCode: response.status,
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
-    };
-  } catch(e) {
-    return {statusCode:500, body:JSON.stringify({error:e.message})};
-  }
+
+  return new Promise((resolve) => {
+    try {
+      const body = event.body;
+      const options = {
+        hostname: 'api.anthropic.com',
+        path: '/v1/messages',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'Content-Length': Buffer.byteLength(body)
+        }
+      };
+
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          resolve({
+            statusCode: res.statusCode,
+            headers: {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            body: data
+          });
+        });
+      });
+
+      req.on('error', (e) => {
+        resolve({statusCode:500, body:JSON.stringify({error:{message:e.message}})});
+      });
+
+      req.write(body);
+      req.end();
+    } catch(e) {
+      resolve({statusCode:500, body:JSON.stringify({error:{message:e.message}})});
+    }
+  });
 };
