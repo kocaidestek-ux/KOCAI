@@ -620,10 +620,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
   <div class="ob-ct"><span>🎯</span> Sınav Türü</div>
   <div class="ob-cd">Hangi sınava hazırlanıyorsun? Her sınavın kendi dünyası var.</div>
   <div class="exam-grid">
-    <button type="button" class="exam-btn" onclick="selEx(this,'TYT')" id="etTYT"><span class="eb-name">TYT</span><span class="eb-sub">Temel Yetenek</span></button>
-    <button type="button" class="exam-btn" onclick="selEx(this,'AYT-SAY')" id="etAYTSAY"><span class="eb-name">AYT Sayısal</span><span class="eb-sub">Mat+Fen</span></button>
-    <button type="button" class="exam-btn" onclick="selEx(this,'AYT-SÖZ')" id="etAYTSOZ"><span class="eb-name">AYT Sözel</span><span class="eb-sub">Türkçe+Sosyal</span></button>
-    <button type="button" class="exam-btn" onclick="selEx(this,'AYT-EA')" id="etAYTEA"><span class="eb-name">AYT EA</span><span class="eb-sub">Eşit Ağırlık</span></button>
+    <button type="button" class="exam-btn" onclick="selEx(this,'TYT')" id="etTYT"><span class="eb-name">YKS</span><span class="eb-sub">TYT + AYT</span></button>
     <button type="button" class="exam-btn" onclick="selEx(this,'LGS')" id="etLGS"><span class="eb-name">LGS</span><span class="eb-sub">8. Sınıf</span></button>
     <button type="button" class="exam-btn" onclick="selEx(this,'KPSS')" id="etKPSS"><span class="eb-name">KPSS</span><span class="eb-sub">Kamu</span></button>
   </div>
@@ -643,24 +640,86 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
   <button type="button" class="btn-ghost" onclick="obGo(1)">← Geri</button>
 </div>
 
-<!-- STEP 3: Target -->
+<!-- STEP 3: Target — sınav tipine göre dinamik -->
 <div class="ob-card" id="obs3">
   <div class="ob-ct"><span>🏛️</span> Hedefin</div>
-  <div class="ob-cd">Hayal ettiğin meslek ve üniversiteyi yaz. KoçAI bu hedefle seni tanıyacak.</div>
 
-  <label class="fl">Hedef Meslek / Bölüm</label>
-  <div class="ac-wrap" id="meslekAc">
-    <input class="ac-inp" id="obM" type="text" placeholder="örn. Yazılım Mühendisi, Avukat, Öğretmen..." oninput="acFilter('meslekAc','obM',MESLEKLER)" autocomplete="off"/>
-    <div class="ac-list" id="meslekAc-list"></div>
+  <!-- YKS hedef -->
+  <div id="hedefYKS">
+    <div class="ob-cd">Hayal ettiğin meslek ve üniversiteyi yaz. KoçAI bu hedefle seni tanıyacak.</div>
+    <label class="fl">Hedef Meslek / Bölüm</label>
+    <div class="ac-wrap" id="meslekAc">
+      <input class="ac-inp" id="obM" type="text" placeholder="örn. Yazılım Mühendisi, Avukat, Öğretmen..." oninput="acFilter('meslekAc','obM',MESLEKLER)" autocomplete="off"/>
+      <div class="ac-list" id="meslekAc-list"></div>
+    </div>
+    <label class="fl">Hedef Üniversite</label>
+    <div class="ac-wrap" id="univAc">
+      <input class="ac-inp" id="obU" type="text" placeholder="örn. ODTÜ, Boğaziçi, İTÜ..." oninput="acFilter('univAc','obU',UNIVS)" autocomplete="off"/>
+      <div class="ac-list" id="univAc-list"></div>
+    </div>
   </div>
 
-  <label class="fl">Hedef Üniversite</label>
-  <div class="ac-wrap" id="univAc">
-    <input class="ac-inp" id="obU" type="text" placeholder="örn. ODTÜ, Boğaziçi, İTÜ..." oninput="acFilter('univAc','obU',UNIVS)" autocomplete="off"/>
-    <div class="ac-list" id="univAc-list"></div>
+  <!-- KPSS hedef -->
+  <div id="hedefKPSS" style="display:none;">
+    <div class="ob-cd">KPSS için hangi alanda sınava gireceksin?</div>
+    <label class="fl">KPSS Alan Türü</label>
+    <select class="ob-sel" id="obKpssAlan">
+      <option value="">Seç...</option>
+      <option value="GYGK">GY/GK — Genel (Tüm Adaylar)</option>
+      <option value="Öğretmenlik">Öğretmenlik (KPSS Eğitim)</option>
+      <option value="Hukuk">Hukuk</option>
+      <option value="İktisat">İktisat</option>
+      <option value="İşletme">İşletme</option>
+      <option value="Muhasebe">Muhasebe</option>
+      <option value="Psikoloji">Psikoloji / PDR</option>
+      <option value="Sosyal Hizmet">Sosyal Hizmet</option>
+      <option value="Mühendislik">Mühendislik</option>
+    </select>
+    <label class="fl">Hedef Kadro / Kurum</label>
+    <input class="ob-inp" id="obKpssKadro" type="text" placeholder="örn. MEB Öğretmen, SGK Memur, Adalet Bakanlığı..."/>
+    <label class="fl" style="margin-top:12px;">Şu an çalışıyor musun?</label>
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+      <button type="button" class="hr-pill" id="calisYes" onclick="setCalisma('evet')" style="flex:1;">✅ Evet, çalışıyorum</button>
+      <button type="button" class="hr-pill" id="calisNo"  onclick="setCalisma('hayir')" style="flex:1;">📚 Hayır, tam zamanlı</button>
+    </div>
+    <div id="calismaDetay" style="display:none;">
+      <label class="fl">İş Saatleri</label>
+      <div style="display:flex;gap:10px;">
+        <input class="ob-inp" id="obIsGiris" type="time" value="09:00" style="flex:1;"/>
+        <span style="align-self:center;color:var(--muted);">—</span>
+        <input class="ob-inp" id="obIsCikis" type="time" value="17:00" style="flex:1;"/>
+      </div>
+    </div>
   </div>
 
-  <button type="button" class="btn-gold" onclick="obGo(4)">Devam Et →</button>
+  <!-- LGS hedef -->
+  <div id="hedefLGS" style="display:none;">
+    <div class="ob-cd">Hangi liseye gitmek istiyorsun? Okul saatlerini de gir, ders programın ona göre yapılsın.</div>
+    <label class="fl">Hedef Lise Türü</label>
+    <select class="ob-sel" id="obLiseTuru">
+      <option value="">Seç...</option>
+      <option value="Fen Lisesi">Fen Lisesi</option>
+      <option value="Anadolu Lisesi">Anadolu Lisesi</option>
+      <option value="Sosyal Bilimler Lisesi">Sosyal Bilimler Lisesi</option>
+      <option value="İmam Hatip Lisesi">İmam Hatip Lisesi</option>
+      <option value="Meslek Lisesi">Meslek Lisesi</option>
+      <option value="Spor Lisesi">Spor Lisesi</option>
+    </select>
+    <label class="fl" style="margin-top:12px;">Okul Saatleri</label>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <div style="flex:1;">
+        <div style="font-size:0.65rem;color:var(--muted);margin-bottom:4px;">Giriş</div>
+        <input class="ob-inp" id="obOkulGiris" type="time" value="08:00"/>
+      </div>
+      <span style="color:var(--muted);margin-top:16px;">—</span>
+      <div style="flex:1;">
+        <div style="font-size:0.65rem;color:var(--muted);margin-bottom:4px;">Çıkış</div>
+        <input class="ob-inp" id="obOkulCikis" type="time" value="15:00"/>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="btn-gold" onclick="obGoHedef()">Devam Et →</button>
   <button type="button" class="btn-ghost" onclick="obGo(2)">← Geri</button>
 </div>
 
@@ -851,8 +910,8 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
       <div class="card-ttl">Deneme Karnesini Yükle</div>
       <div class="card-dsc">Fotoğraf çek ya da ekran görüntüsü yükle. KoçAI netleri okur, kariyer analizini yapar ve kaynak önerir.</div>
 
-      <!-- MOD SEÇİCİ -->
-      <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <!-- MOD SEÇİCİ — YKS için -->
+      <div id="modeSec" style="display:flex;gap:8px;margin-bottom:14px;">
         <button type="button" id="modeTYT" onclick="setAnMode('tyt')"
           style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--gold);background:rgba(245,200,66,0.1);color:var(--gold);font-size:0.78rem;font-weight:700;cursor:pointer;">
           📝 Sadece TYT
@@ -860,6 +919,18 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
         <button type="button" id="modeYKS" onclick="setAnMode('yks')"
           style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border2);background:transparent;color:var(--muted2);font-size:0.78rem;font-weight:700;cursor:pointer;">
           🎯 TYT + AYT (Tam YKS)
+        </button>
+      </div>
+
+      <!-- KPSS MOD SEÇİCİ -->
+      <div id="modeSecKPSS" style="display:none;gap:8px;margin-bottom:14px;">
+        <button type="button" id="modeGYGK" onclick="setAnMode('gygk')"
+          style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--gold);background:rgba(245,200,66,0.1);color:var(--gold);font-size:0.78rem;font-weight:700;cursor:pointer;">
+          📝 Sadece GY/GK
+        </button>
+        <button type="button" id="modeKPSSFull" onclick="setAnMode('kpss-full')"
+          style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border2);background:transparent;color:var(--muted2);font-size:0.78rem;font-weight:700;cursor:pointer;">
+          🎯 GY/GK + Alan
         </button>
       </div>
 
@@ -1051,9 +1122,9 @@ const WID_HAYIR = [
   "Rakiplerin şu an çalışıyor. Sen ne yapıyorsun? 👀",
 ];
 
-// Dönen widget soruları — her gün farklı, her açılışta değişir
-const WID_SORULAR = [
-  {s:"Bugün sorularını\nçözdün mü?",          tip:"soru"},
+// Dönen widget soruları — sınav tipine göre farklı
+const WID_SORULAR_YKS = [
+  {s:"Bugün TYT mi\nAYT mi çalışıyorsun?",   tip:"soru"},
   {s:"Karnen hazır mı?\nBu hafta analiz yaptın mı?", tip:"karne"},
   {s:"Bugün kaç net\nyaptın?",                 tip:"net"},
   {s:"En zayıf konuna\nbaktın mı?",            tip:"konu"},
@@ -1062,12 +1133,38 @@ const WID_SORULAR = [
   {s:"Bugün YouTube\nders izledin mi?",        tip:"video"},
   {s:"Motivasyonun\nnasıl bugün?",             tip:"motivasyon"},
 ];
+const WID_SORULAR_KPSS = [
+  {s:"Bugün GY/GK mi\nAlan mı çalışıyorsun?", tip:"soru"},
+  {s:"Soru bankandan\nkaç soru çözdün?",       tip:"net"},
+  {s:"Alan sınavına\nhazır mısın?",            tip:"konu"},
+  {s:"GY/GK testini\nbu hafta denedin mi?",   tip:"deneme"},
+  {s:"Hata analizini\nyaptın mı?",             tip:"analiz"},
+  {s:"Bugün çalışmaya\nzaman ayırdın mı?",    tip:"motivasyon"},
+];
+const WID_SORULAR_LGS = [
+  {s:"Bugün okul\nnasıldı?",                  tip:"motivasyon"},
+  {s:"Ödevlerini\nyaptın mı?",                tip:"soru"},
+  {s:"Bugün kaç soru\nçözdün?",               tip:"net"},
+  {s:"En zor dersin\nneydi bugün?",           tip:"konu"},
+  {s:"Deneme sınavın\nbu hafta var mı?",      tip:"deneme"},
+  {s:"Yarın ne\nçalışacaksın?",               tip:"analiz"},
+];
+
+function getWidSorular(){
+  const exam=OB.exam||'TYT';
+  if(exam==='KPSS') return WID_SORULAR_KPSS;
+  if(exam==='LGS')  return WID_SORULAR_LGS;
+  return WID_SORULAR_YKS;
+}
+
+const WID_SORULAR = WID_SORULAR_YKS; // geriye dönük uyumluluk
 
 function getWidSoru() {
+  const sorular = getWidSorular();
   const gun = new Date().getDay();
   const saat = new Date().getHours();
-  const idx = (gun * 3 + Math.floor(saat / 8)) % WID_SORULAR.length;
-  return WID_SORULAR[idx];
+  const idx = (gun * 3 + Math.floor(saat / 8)) % sorular.length;
+  return sorular[idx];
 }
 
 function initWidSoru() {
@@ -1344,7 +1441,42 @@ const S = {
   cfg:safeJSON(LS.get('k_cfg')||'{"notif":false,"weekly":true,"streak":true,"time":"18:00"}',{}),
 };
 
-const OB = {name:'',cls:'',hours:'',exam:'',field:'',meslek:'',univ:'',miz:[],okulGiris:'',okulCikis:''};
+const OB = {name:'',cls:'',hours:'',exam:'',field:'',meslek:'',univ:'',miz:[],okulGiris:'',okulCikis:'',kpssAlan:'',kpssKadro:'',calisiyor:'hayir',isGiris:'',isCikis:'',liseTuru:''};
+
+function setCalisma(val){
+  OB.calisiyor=val;
+  ['calisYes','calisNo'].forEach(id=>document.getElementById(id)?.classList.remove('act'));
+  document.getElementById(val==='evet'?'calisYes':'calisNo')?.classList.add('act');
+  const det=document.getElementById('calismaDetay');
+  if(det)det.style.display=val==='evet'?'block':'none';
+}
+
+function showHedefSection(){
+  const exam=OB.exam||'TYT';
+  document.getElementById('hedefYKS').style.display=(exam==='TYT'||exam==='YKS')?'block':'none';
+  document.getElementById('hedefKPSS').style.display=exam==='KPSS'?'block':'none';
+  document.getElementById('hedefLGS').style.display=exam==='LGS'?'block':'none';
+}
+
+function obGoHedef(){
+  const exam=OB.exam||'TYT';
+  if(exam==='KPSS'){
+    OB.kpssAlan=document.getElementById('obKpssAlan')?.value||'';
+    OB.kpssKadro=document.getElementById('obKpssKadro')?.value.trim()||'';
+    OB.isGiris=document.getElementById('obIsGiris')?.value||'';
+    OB.isCikis=document.getElementById('obIsCikis')?.value||'';
+    OB.meslek=OB.kpssAlan+' — '+(OB.kpssKadro||'Kamu Memuru');
+  } else if(exam==='LGS'){
+    OB.liseTuru=document.getElementById('obLiseTuru')?.value||'';
+    OB.okulGiris=document.getElementById('obOkulGiris')?.value||'08:00';
+    OB.okulCikis=document.getElementById('obOkulCikis')?.value||'15:00';
+    OB.meslek=OB.liseTuru||'Lise';
+  } else {
+    OB.meslek=document.getElementById('obM')?.value.trim()||OB.meslek;
+    OB.univ=document.getElementById('obU')?.value.trim()||OB.univ;
+  }
+  obGo(4);
+}
 let mizIdx=0;
 
 // ═══════════════════════════════════════
@@ -1409,6 +1541,8 @@ function selEx(el,val){
   // Sınav değişince ders gridini yeniden oluştur
   const g=document.getElementById('sGrid');if(g)g.innerHTML='';
   if(manOn)buildSubjGrid();
+  // Step 3'ü sınava göre hazırla
+  showHedefSection();
 }
 
 function obGo(step){
@@ -1963,14 +2097,34 @@ async function startAn(){
   animLoad();
   try{
     if(anMod==='yks'){
-      // YKS modu: TYT ve/veya AYT fotoğraflarını oku
+      let tytOkundu=false, aytOkundu=false;
       if(b64){
-        try{ await anPhotoFor('tyt'); }
-        catch(e){ console.warn('TYT foto okunamadı:',e.message); }
+        try{
+          await anPhotoFor('tyt');
+          tytOkundu=true;
+        }catch(e){
+          console.warn('TYT foto okunamadı:',e.message);
+        }
       }
       if(b64AYT){
-        try{ await anPhotoFor('ayt'); }
-        catch(e){ console.warn('AYT foto okunamadı:',e.message); }
+        try{
+          await anPhotoFor('ayt');
+          aytOkundu=true;
+        }catch(e){
+          console.warn('AYT foto okunamadı:',e.message);
+        }
+      }
+      // Fotoğraf okundu ama net girilemedi → form aç
+      const herhangiNet=getSUBJS().some(s=>{
+        const el=document.getElementById('ni-'+s.n);
+        return el&&el.value&&parseFloat(el.value)!==0;
+      });
+      if((b64||b64AYT)&&!herhangiNet&&!manOn){
+        document.getElementById('loadArea').classList.remove('on');
+        document.getElementById('upForm').style.display='block';
+        if(!manOn)togMan();
+        alert('📸 Fotoğraf okundu ama netler doldurulamadı.\nAşağıdaki alanlara TYT netlerinizi elle girin.');
+        return;
       }
     } else if(b64){
       try{ await anPhoto(); }
@@ -1978,7 +2132,7 @@ async function startAn(){
         console.warn('Foto okunamadı:',e.message);
         document.getElementById('loadArea').classList.remove('on');
         document.getElementById('upForm').style.display='block';
-        alert('📸 Fotoğraf okunamadı.\n\nNetlerini elle girerek devam edebilirsin.');
+        alert('📸 Fotoğraf okunamadı.\nNetlerini elle girerek devam edebilirsin.');
         return;
       }
     }
@@ -2020,23 +2174,55 @@ const AYT_SUBJS={
 let anMod='tyt'; // 'tyt' veya 'yks'
 let aytAlan='SAY';
 
+function initAnalizPage(){
+  const exam=OB.exam||'TYT';
+  const modeSec=document.getElementById('modeSec');
+  const modeSecKPSS=document.getElementById('modeSecKPSS');
+  if(exam==='KPSS'){
+    if(modeSec)modeSec.style.display='none';
+    if(modeSecKPSS){modeSecKPSS.style.display='flex';}
+    setAnMode('gygk');
+  } else if(exam==='LGS'){
+    if(modeSec)modeSec.style.display='none';
+    if(modeSecKPSS)modeSecKPSS.style.display='none';
+    setAnMode('tyt');
+  } else {
+    if(modeSec)modeSec.style.display='flex';
+    if(modeSecKPSS)modeSecKPSS.style.display='none';
+    setAnMode('tyt');
+  }
+}
+
 function setAnMode(mod){
   anMod=mod;
-  const tytBtn=document.getElementById('modeTYT');
-  const yksBtn=document.getElementById('modeYKS');
-  const aytSec=document.getElementById('aytSection');
+  const isTYT=mod==='tyt'||mod==='gygk';
+  const isDual=mod==='yks'||mod==='kpss-full';
+
+  // TYT butonu
+  const tytBtn=document.getElementById('modeTYT')||document.getElementById('modeGYGK');
+  const yksBtn=document.getElementById('modeYKS')||document.getElementById('modeKPSSFull');
+  if(tytBtn){tytBtn.style.borderColor=isTYT?'var(--gold)':'var(--border2)';tytBtn.style.color=isTYT?'var(--gold)':'var(--muted2)';tytBtn.style.background=isTYT?'rgba(245,200,66,0.1)':'transparent';}
+  if(yksBtn){yksBtn.style.borderColor=isDual?'var(--gold)':'var(--border2)';yksBtn.style.color=isDual?'var(--gold)':'var(--muted2)';yksBtn.style.background=isDual?'rgba(245,200,66,0.1)':'transparent';}
+
   const single=document.getElementById('uploadSingle');
   const dual=document.getElementById('uploadDual');
-  if(mod==='yks'){
-    yksBtn.style.borderColor='var(--gold)';yksBtn.style.color='var(--gold)';yksBtn.style.background='rgba(245,200,66,0.1)';
-    tytBtn.style.borderColor='var(--border2)';tytBtn.style.color='var(--muted2)';tytBtn.style.background='transparent';
+  const aytSec=document.getElementById('aytSection');
+
+  if(isDual){
     if(single)single.style.display='none';
-    if(dual)dual.style.display='block';
+    if(dual){
+      dual.style.display='block';
+      // KPSS modunda AYT label'larını güncelle
+      if(mod==='kpss-full'){
+        const tytLbl=dual.querySelector('[style*="teal"]');
+        const aytLbl=dual.querySelector('[style*="gold"]');
+        if(tytLbl)tytLbl.textContent='GY/GK Karnesi';
+        if(aytLbl)aytLbl.textContent='Alan Sınavı Karnesi';
+      }
+    }
     if(aytSec&&manOn)aytSec.style.display='block';
     if(!aytAlan)setAytAlan('SAY');
   } else {
-    tytBtn.style.borderColor='var(--gold)';tytBtn.style.color='var(--gold)';tytBtn.style.background='rgba(245,200,66,0.1)';
-    yksBtn.style.borderColor='var(--border2)';yksBtn.style.color='var(--muted2)';yksBtn.style.background='transparent';
     if(single)single.style.display='block';
     if(dual)dual.style.display='none';
     if(aytSec)aytSec.style.display='none';
@@ -2133,16 +2319,11 @@ function hesapla(){
   });
 
   if(dersler.length===0){
-    // Fotoğraf varsa boş netlerle de devam et (API okuyacak)
-    // Fotoğraf yoksa uyarı ver
-    if(!b64){
-      document.getElementById('loadArea').classList.remove('on');
-      document.getElementById('upForm').style.display='block';
-      alert('En az bir derse net girmen gerekiyor!');
-      return null;
-    }
-    // Fotoğraflı modda tüm dersler 0 net ile başlasın
-    SUBJS.forEach(s=>dersler.push({name:s.n,net:0}));
+    document.getElementById('loadArea').classList.remove('on');
+    document.getElementById('upForm').style.display='block';
+    if(!manOn)togMan();
+    alert('En az bir derse net girmen gerekiyor!');
+    return null;
   }
   toplamNet = parseFloat(toplamNet.toFixed(2));
 
@@ -2355,9 +2536,28 @@ function hesapla(){
   }
   const siralama = sirSim(toplamNet,sinav);
 
-  // ── 7. HAFTALIK PLAN (konu bazlı) ───────────────────────
+  // ── 7. HAFTALIK PLAN (sınav tipine göre saat aralıkları) ──
   const zayif  = [...sorted].slice(0,3).map(d=>d.name);
   const gunler = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
+
+  // Çalışma saatlerini belirle
+  let calisBaslangic = '16:00';
+  let caliBitis = '21:30';
+  if(sinav==='LGS'){
+    // Okul çıkışından sonra
+    const cikis = OB.okulCikis||'15:00';
+    const [h,m] = cikis.split(':').map(Number);
+    const baslangic = `${String(h+1).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    calisBaslangic = baslangic;
+    caliBitis = '21:00';
+  } else if(sinav==='KPSS' && OB.calisiyor==='evet'){
+    // İş çıkışından sonra
+    const cikis = OB.isCikis||'17:00';
+    const [h,m] = cikis.split(':').map(Number);
+    const baslangic = `${String(h+1).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    calisBaslangic = baslangic;
+    caliBitis = '22:00';
+  }
 
   function anaKonu(dersAdi){
     const d=dersler.find(x=>x.name===dersAdi);
@@ -2372,29 +2572,36 @@ function hesapla(){
     const destek = zayif[(i+1)%zayif.length];
     const anaK   = anaKonu(ana);
     const destekK= anaKonu(destek);
+    const [bH,bM]=calisBaslangic.split(':').map(Number);
+    const s1=calisBaslangic;
+    const s2=`${String(bH+1).padStart(2,'0')}:30`;
+    const s3=`${String(bH+1).padStart(2,'0')}:45`;
+    const s4=`${String(bH+3).padStart(2,'0')}:15`;
+    const s5=`${String(bH+3).padStart(2,'0')}:15`;
+    const s6=`${String(bH+4).padStart(2,'0')}:15`;
+    const sinavAd = sinav==='KPSS'?'GY/GK':sinav;
     if(i===4) return{day:gun,saatlik:[
-      {saat:'09:00-12:15',ders:sinav,aktivite:`Tam ${sinav} denemesi – sessiz ortamda`,tip:'soru'},
+      {saat:'09:00-12:15',ders:sinavAd,aktivite:`Tam ${sinavAd} denemesi – sessiz ortamda`,tip:'soru'},
       {saat:'13:00-14:30',ders:'Analiz',aktivite:'Hata analizi – yanlış soruları konulara göre listele',tip:'analiz'},
       {saat:'14:30-15:30',ders:ana,aktivite:`${ana} – ${anaK} hata analizi`,tip:'analiz'}
     ],tasks:[
-      {subject:sinav,desc:'Tam deneme sınavı',amount:'135 soru'},
-      {subject:'Analiz',desc:'Hata analizi – zayıf konuları listele',amount:'45 dk'}
+      {subject:sinavAd,desc:'Tam deneme sınavı',amount:'135 soru'},
+      {subject:'Analiz',desc:'Hata analizi',amount:'45 dk'}
     ]};
     if(i===6) return{day:gun,saatlik:[
-      {saat:'10:00-11:30',ders:ana,aktivite:`${ana} – ${anaK} derinlemesine tekrar`,tip:'soru'},
-      {saat:'11:45-13:00',ders:destek,aktivite:`${destek} – ${destekK} konu tekrarı`,tip:'soru'},
+      {saat:`${s1}-${s2}`,ders:ana,aktivite:`${ana} – ${anaK} derinlemesine tekrar`,tip:'soru'},
+      {saat:`${s3}-${s4}`,ders:destek,aktivite:`${destek} – ${destekK} konu tekrarı`,tip:'soru'},
       {saat:'14:00-14:30',ders:'Plan',aktivite:'Gelecek haftayı planla – zayıf konuları güncelle',tip:'analiz'}
     ],tasks:[
       {subject:ana,desc:`${anaK} derinlemesine tekrar`,amount:'2 saat'},
       {subject:'Plan',desc:'Gelecek haftayı planla',amount:'30 dk'}
     ]};
     return{day:gun,saatlik:[
-      {saat:'16:00-17:30',ders:ana,aktivite:`${ana} – ${anaK} konu anlatımı (YouTube) + 25 soru`,tip:'video'},
-      {saat:'17:30-17:45',ders:'Mola',aktivite:'Kısa mola',tip:'mola'},
-      {saat:'17:45-19:15',ders:ana,aktivite:`${ana} – ${anaK} soru çözümü devam`,tip:'soru'},
-      {saat:'19:15-20:00',ders:'Mola',aktivite:'Yemek molası',tip:'mola'},
-      {saat:'20:00-21:00',ders:destek,aktivite:`${destek} – ${destekK} kısa tekrar + 20 soru`,tip:'soru'},
-      {saat:'21:00-21:30',ders:'Tekrar',aktivite:'Gün sonu hata analizi',tip:'analiz'}
+      {saat:`${s1}-${s2}`,ders:ana,aktivite:`${ana} – ${anaK} konu anlatımı + 25 soru`,tip:'video'},
+      {saat:`${s2}-${s3}`,ders:'Mola',aktivite:'Kısa mola',tip:'mola'},
+      {saat:`${s3}-${s4}`,ders:ana,aktivite:`${ana} – ${anaK} soru çözümü devam`,tip:'soru'},
+      {saat:`${s5}-${s6}`,ders:destek,aktivite:`${destek} – ${destekK} kısa tekrar + 20 soru`,tip:'soru'},
+      {saat:`${s6}-${caliBitis}`,ders:'Tekrar',aktivite:'Gün sonu hata analizi',tip:'analiz'}
     ],tasks:[
       {subject:ana,   desc:`${anaK} – YouTube + soru bankası`,amount:'35 soru'},
       {subject:destek,desc:`${destekK} – kısa tekrar`,        amount:'20 soru'}
@@ -2616,7 +2823,7 @@ Sadece şu JSON formatında ver:
 {"sinav":"TYT","netler":{"Türkçe":0,"Matematik":0,"Fizik":0,"Kimya":0,"Biyoloji":0,"Tarih":0,"Coğrafya":0,"Felsefe":0,"Din Kültürü":0}}
 Ondalık kullan. Fotoğrafta olmayan dersler 0 kalır.`;
 
-  const res=await fetch('/.netlify/functions/api',{
+  const res=await fetch('/api/proxy',{
     method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,
       messages:[{role:'user',content:[
@@ -2668,7 +2875,7 @@ async function anManual(){
   if(!key) throw new Error('API_KEY_MISSING');
   let tot=0;
   const subs=SUBJS.map(s=>{const v=parseFloat(document.getElementById('ni-'+s.n)?.value)||0;tot+=v;return{name:s.n,net:v};});
-  const res=await fetch("/.netlify/functions/api",{
+  const res=await fetch("/api/proxy",{
     method:"POST",
     headers:{
       "Content-Type":"application/json",
