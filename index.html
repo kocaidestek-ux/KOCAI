@@ -831,9 +831,39 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
       </div>
       <div class="fp" id="fp"><img id="fpI" src="" alt=""/></div>
       <div class="or-d">veya</div>
+
+      <!-- MOD SEÇİCİ -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button type="button" id="modeTYT" onclick="setAnMode('tyt')"
+          style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--gold);background:rgba(245,200,66,0.1);color:var(--gold);font-size:0.78rem;font-weight:700;cursor:pointer;">
+          📝 Sadece TYT
+        </button>
+        <button type="button" id="modeYKS" onclick="setAnMode('yks')"
+          style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border2);background:transparent;color:var(--muted2);font-size:0.78rem;font-weight:700;cursor:pointer;">
+          🎯 TYT + AYT (Tam YKS)
+        </button>
+      </div>
+
       <div class="man-tog" onclick="togMan()"><span id="mArr">▸</span> Net bilgilerini elle gir</div>
       <div id="photoHint" style="display:none;font-size:0.75rem;color:var(--warn);padding:8px 12px;background:rgba(192,144,48,0.1);border-radius:8px;margin-bottom:8px;">📸 Fotoğraf yüklendi! Şimdi aşağıdan netlerini de gir → Analiz yapılacak.</div>
-      <div id="manArea" style="display:none;"><div class="subj-g" id="sGrid"></div></div>
+
+      <div id="manArea" style="display:none;">
+        <!-- TYT GRID -->
+        <div id="tytSection">
+          <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--teal);margin:10px 0 6px;">TYT Netleri</div>
+          <div class="subj-g" id="sGrid"></div>
+        </div>
+        <!-- AYT GRID (sadece YKS modunda) -->
+        <div id="aytSection" style="display:none;">
+          <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin:14px 0 6px;">AYT Netleri — Alan Seç:</div>
+          <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+            <button type="button" onclick="setAytAlan('SAY')" id="alanSAY" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--border2);background:transparent;color:var(--muted2);font-size:0.72rem;cursor:pointer;">Sayısal</button>
+            <button type="button" onclick="setAytAlan('EA')"  id="alanEA"  style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--border2);background:transparent;color:var(--muted2);font-size:0.72rem;cursor:pointer;">Eşit Ağırlık</button>
+            <button type="button" onclick="setAytAlan('SOZ')" id="alanSOZ" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--border2);background:transparent;color:var(--muted2);font-size:0.72rem;cursor:pointer;">Sözel</button>
+          </div>
+          <div class="subj-g" id="aytGrid"></div>
+        </div>
+      </div>
       <button type="button" class="btn-gold" id="startB" onclick="startAn()" disabled>🦉 KoçAI Analiz Yapsın</button>
     </div>
   </div>
@@ -1713,7 +1743,16 @@ function loadGeminiKeyInput(){
   const el=document.getElementById('geminiKeyInp');
   if(el&&k){el.value=k;const st=document.getElementById('geminiKeyStatus');if(st){st.textContent='✦ Kayıtlı anahtar mevcut';st.style.color='var(--muted2)';}}
 }
-function clearHistory(){if(confirm('Geçmiş net verileri silinecek. Emin misin?')){LS.remove('k_history');renderHaftalikOzet();alert('✦ Geçmiş temizlendi!');}}
+function clearHistory(){
+  if(confirm('Geçmiş net verileri silinecek. Emin misin?')){
+    LS.remove('k_history');
+    renderHaftalikOzet();
+    // Paneli yenile
+    const card=document.getElementById('haftalikOzetCard');
+    if(card)card.style.display='none';
+    alert('✦ Geçmiş temizlendi!');
+  }
+}
 function resetApp(){if(confirm('Profil silinecek. Emin misin?')){['k_profile','k_done','k_streak','k_lastday','k_cfg','k_history'].forEach(k=>LS.remove(k));location.reload();}}
 
 // ═══════════════════════════════════════
@@ -1760,7 +1799,20 @@ function buildSubjGrid(){
     </div>`);
 }
 
-function togMan(){manOn=!manOn;document.getElementById('manArea').style.display=manOn?'block':'none';document.getElementById('mArr').textContent=manOn?'▾':'▸';chkR();}
+function togMan(){
+  manOn=!manOn;
+  document.getElementById('manArea').style.display=manOn?'block':'none';
+  document.getElementById('mArr').textContent=manOn?'▾':'▸';
+  if(manOn){
+    buildSubjGrid();
+    if(anMod==='yks'){
+      const aytSec=document.getElementById('aytSection');
+      if(aytSec)aytSec.style.display='block';
+      setAytAlan(aytAlan||'SAY');
+    }
+  }
+  chkR();
+}
 
 function onFile(e){
   const f=e.target.files[0];if(!f)return;
@@ -1860,8 +1912,113 @@ async function startAn(){
   }
 }
 
-// ─────────────────────────────────────────────────────────
-//  hesapla() — TAM DİNAMİK LOCAL ANALİZ FONKSİYONU (v10)
+// ── YKS PUAN MOTORU ────────────────────────────────────────
+// ÖSYM 2024 yaklaşık ağırlık katsayıları
+const YKS_W={
+  TYT:{
+    Türkçe:    {SAY:1.8, EA:2.7, SOZ:3.4},
+    Matematik: {SAY:3.2, EA:2.7, SOZ:1.8},
+    Sosyal:    {SAY:1.8, EA:1.8, SOZ:2.0}, // Tarih+Coğ+Fel+Din ortalaması
+    Fen:       {SAY:2.4, EA:1.8, SOZ:0.8}  // Fiz+Kim+Bio ortalaması
+  },
+  AYT:{
+    SAY:{Matematik:2.4, Fizik:2.4, Kimya:2.4, Biyoloji:2.4},
+    EA: {Matematik:2.4, Türkçe:2.4, Tarih:1.8, Coğrafya:1.8},
+    SOZ:{Türkçe:2.4,  Tarih:2.4,  Coğrafya:2.4, Felsefe:2.4}
+  }
+};
+
+const AYT_SUBJS={
+  SAY:[{n:'Matematik',e:'🔢'},{n:'Fizik',e:'⚛️'},{n:'Kimya',e:'🧪'},{n:'Biyoloji',e:'🧬'}],
+  EA: [{n:'Matematik',e:'🔢'},{n:'Türkçe',e:'📝'},{n:'Tarih',e:'🏛️'},{n:'Coğrafya',e:'🗺️'}],
+  SOZ:[{n:'Türkçe',e:'📝'},{n:'Tarih',e:'🏛️'},{n:'Coğrafya',e:'🗺️'},{n:'Felsefe',e:'💭'}]
+};
+
+let anMod='tyt'; // 'tyt' veya 'yks'
+let aytAlan='SAY';
+
+function setAnMode(mod){
+  anMod=mod;
+  const tytBtn=document.getElementById('modeTYT');
+  const yksBtn=document.getElementById('modeYKS');
+  const aytSec=document.getElementById('aytSection');
+  if(mod==='yks'){
+    yksBtn.style.borderColor='var(--gold)';yksBtn.style.color='var(--gold)';yksBtn.style.background='rgba(245,200,66,0.1)';
+    tytBtn.style.borderColor='var(--border2)';tytBtn.style.color='var(--muted2)';tytBtn.style.background='transparent';
+    if(aytSec&&manOn)aytSec.style.display='block';
+    if(!aytAlan)setAytAlan('SAY');
+  } else {
+    tytBtn.style.borderColor='var(--gold)';tytBtn.style.color='var(--gold)';tytBtn.style.background='rgba(245,200,66,0.1)';
+    yksBtn.style.borderColor='var(--border2)';yksBtn.style.color='var(--muted2)';yksBtn.style.background='transparent';
+    if(aytSec)aytSec.style.display='none';
+  }
+  chkR();
+}
+
+function setAytAlan(alan){
+  aytAlan=alan;
+  ['SAY','EA','SOZ'].forEach(a=>{
+    const b=document.getElementById('alan'+a);
+    if(!b)return;
+    if(a===alan){b.style.borderColor='var(--gold)';b.style.color='var(--gold)';b.style.background='rgba(245,200,66,0.1)';}
+    else{b.style.borderColor='var(--border2)';b.style.color='var(--muted2)';b.style.background='transparent';}
+  });
+  buildAytGrid();
+}
+
+function buildAytGrid(){
+  const g=document.getElementById('aytGrid');
+  if(!g)return;
+  g.innerHTML='';
+  (AYT_SUBJS[aytAlan]||[]).forEach(s=>g.innerHTML+=`
+    <div class="subj-r">
+      <span>${s.e}</span><div class="sn">AYT ${s.n}</div>
+      <input class="ni" type="number" min="-10" max="40" placeholder="–" id="ayt-${s.n}" oninput="chkR()"/>
+      <div class="nl">net</div>
+    </div>`);
+}
+
+function hesaplaYKS(tytNetler, aytNetler, alan){
+  // TYT ağırlıklı puan bileşenleri
+  const turNet  = tytNetler['Türkçe']||0;
+  const matNet  = tytNetler['Matematik']||0;
+  const sosNet  = ((tytNetler['Tarih']||0)+(tytNetler['Coğrafya']||0)+(tytNetler['Felsefe']||0)+(tytNetler['Din Kültürü']||0));
+  const fenNet  = ((tytNetler['Fizik']||0)+(tytNetler['Kimya']||0)+(tytNetler['Biyoloji']||0));
+
+  const typ = alan; // SAY, EA, SOZ
+  const tytPuan = 100
+    + turNet  * YKS_W.TYT.Türkçe[typ]
+    + matNet  * YKS_W.TYT.Matematik[typ]
+    + sosNet  * YKS_W.TYT.Sosyal[typ]
+    + fenNet  * YKS_W.TYT.Fen[typ];
+
+  // AYT ağırlıklı puan
+  let aytPuan=100;
+  const alanW=YKS_W.AYT[alan]||{};
+  Object.entries(alanW).forEach(([ders,kat])=>{
+    aytPuan+=(aytNetler[ders]||0)*kat;
+  });
+
+  // YKS Puan = TYT%40 + AYT%60
+  const yksPuan=tytPuan*0.4+aytPuan*0.6;
+  return {tytPuan:Math.round(tytPuan*100)/100, aytPuan:Math.round(aytPuan*100)/100, yksPuan:Math.round(yksPuan*100)/100};
+}
+
+function getYksSiralama(puan){
+  // 2024 YKS yaklaşık puan-sıralama eşleşmesi
+  const tablo=[
+    {p:480,s:500},{p:460,s:1500},{p:440,s:4000},{p:420,s:8000},
+    {p:400,s:15000},{p:380,s:28000},{p:360,s:50000},{p:340,s:85000},
+    {p:320,s:140000},{p:300,s:210000},{p:280,s:300000},{p:260,s:420000},
+    {p:240,s:560000},{p:220,s:720000},{p:200,s:900000},{p:180,s:1100000},
+  ];
+  let r=tablo[tablo.length-1];
+  for(let i=0;i<tablo.length;i++){if(puan>=tablo[i].p){r=tablo[i];break;}}
+  // interpolasyon
+  if(r.s>=1000000)return'~1.000.000+';
+  const k=r.s>=1000?Math.round(r.s/1000)+'K':r.s;
+  return '~'+r.s.toLocaleString('tr-TR');
+}
 //  API gerektirmez. Gerçek net inputlarını okur, sınıflandırır,
 //  kişiselleştirilmiş rapor + haftalık plan üretir.
 // ─────────────────────────────────────────────────────────
@@ -2183,7 +2340,23 @@ function hesapla(){
       </div>
     </div>`;
 
-  // ── 10. DATA OBJESİ DÖN ──────────────────────────────────
+  // ── 10. YKS BİRLEŞİK PUAN (TYT+AYT modunda) ────────────
+  let yksPuanKarti=null;
+  if(anMod==='yks'){
+    const aytNetler={};
+    (AYT_SUBJS[aytAlan]||[]).forEach(s=>{
+      const el=document.getElementById('ayt-'+s.n);
+      if(el&&el.value)aytNetler[s.n]=parseFloat(el.value)||0;
+    });
+    const tytNetObj={};
+    dersler.forEach(d=>tytNetObj[d.name]=d.net);
+    const puan=hesaplaYKS(tytNetObj,aytNetler,aytAlan);
+    const siralama=getYksSiralama(puan.yksPuan);
+    yksPuanKarti={alan:aytAlan, ...puan, siralama,
+      aytNetler: Object.entries(aytNetler).map(([n,v])=>({name:n,net:v}))};
+  }
+
+  // ── 11. DATA OBJESİ DÖN ──────────────────────────────────
   return{
     exam:sinav, totalNet:toplamNet, subjects:dersler,
     urgentTopics, mediumTopics, goodTopics,
@@ -2196,7 +2369,8 @@ function hesapla(){
       yorum:    uyumYorumu
     },
     weekPlan, coachNote,
-    _raporBasligi
+    _raporBasligi,
+    _yksPuanKarti: yksPuanKarti
   };
 }
 
@@ -2560,6 +2734,39 @@ function renderRes(data){
   const old=document.getElementById('_kocaiHeader');if(old)old.remove();
   const oldY=document.getElementById('_yuzdelikKartWrap');if(oldY)oldY.remove();
   if(data._raporBasligi){const h=document.createElement('div');h.id='_kocaiHeader';h.innerHTML=data._raporBasligi;document.getElementById('scG').parentNode.insertBefore(h,document.getElementById('scG'));}
+
+  // YKS Birleşik Puan Kartı
+  const oldYks=document.getElementById('_yksPuanKarti');if(oldYks)oldYks.remove();
+  if(data._yksPuanKarti){
+    const yp=data._yksPuanKarti;
+    const alanAd={SAY:'Sayısal',EA:'Eşit Ağırlık',SOZ:'Sözel'}[yp.alan]||yp.alan;
+    const kartHTML=`<div id="_yksPuanKarti" style="background:linear-gradient(135deg,rgba(46,184,176,0.08),rgba(245,200,66,0.05));border:1px solid var(--border2);border-radius:16px;padding:18px 20px;margin-bottom:16px;">
+      <div style="font-size:0.58rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--teal);margin-bottom:10px;">YKS ${alanAd} — Birleşik Puan</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div style="text-align:center;padding:10px;background:rgba(0,0,0,0.15);border-radius:10px;">
+          <div style="font-size:1.1rem;font-weight:800;color:var(--teal);font-family:'Lora',serif;">${yp.tytPuan}</div>
+          <div style="font-size:0.55rem;color:var(--muted2);margin-top:2px;">TYT PUANI</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:rgba(0,0,0,0.15);border-radius:10px;">
+          <div style="font-size:1.1rem;font-weight:800;color:var(--gold);font-family:'Lora',serif;">${yp.aytPuan}</div>
+          <div style="font-size:0.55rem;color:var(--muted2);margin-top:2px;">AYT PUANI</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:rgba(0,0,0,0.15);border-radius:10px;">
+          <div style="font-size:1.1rem;font-weight:800;color:var(--text);font-family:'Lora',serif;">${yp.yksPuan}</div>
+          <div style="font-size:0.55rem;color:var(--muted2);margin-top:2px;">YKS PUANI</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(0,0,0,0.2);border-radius:10px;">
+        <div style="font-size:1.2rem;">🎯</div>
+        <div>
+          <div style="font-size:0.65rem;color:var(--muted2);font-weight:700;letter-spacing:0.08em;">TAHMİNİ YKS SIRALAMASI</div>
+          <div style="font-size:1rem;font-weight:700;color:var(--text);">${yp.siralama}</div>
+        </div>
+      </div>
+      <div style="font-size:0.62rem;color:var(--muted2);margin-top:8px;text-align:center;">TYT %40 + AYT %60 formülüyle tahmini hesaplanmıştır.</div>
+    </div>`;
+    document.getElementById('scG').insertAdjacentHTML('afterend',kartHTML);
+  }
 
   // Scores
   const avg=(data.totalNet/data.subjects.length).toFixed(1);
