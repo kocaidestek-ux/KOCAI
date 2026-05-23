@@ -2320,13 +2320,11 @@ Sadece şu JSON formatında ver, başka hiçbir şey yazma:
 {"Türkçe":0,"Matematik":0,"Fizik":0,"Kimya":0,"Biyoloji":0,"Tarih":0,"Coğrafya":0,"Felsefe":0,"Din Kültürü":0}
 Fotoğrafta olmayan dersler 0 kalır. Ondalık kullan (örn: 26.25). TYT ve AYT varsa toplamları yaz.`;
 
-  const res=await fetch("https://api.anthropic.com/v1/messages",{
+  const res=await fetch("/.netlify/functions/api",{
     method:"POST",
     headers:{
       "Content-Type":"application/json",
-      "x-api-key":key,
-      "anthropic-version":"2023-06-01",
-      "anthropic-dangerous-direct-browser-access":"true"
+      "Content-Type":"application/json"
     },
     body:JSON.stringify({
       model:"claude-sonnet-4-6",
@@ -2368,13 +2366,11 @@ async function anManual(){
   if(!key) throw new Error('API_KEY_MISSING');
   let tot=0;
   const subs=SUBJS.map(s=>{const v=parseFloat(document.getElementById('ni-'+s.n)?.value)||0;tot+=v;return{name:s.n,net:v};});
-  const res=await fetch("https://api.anthropic.com/v1/messages",{
+  const res=await fetch("/.netlify/functions/api",{
     method:"POST",
     headers:{
       "Content-Type":"application/json",
-      "x-api-key":key,
-      "anthropic-version":"2023-06-01",
-      "anthropic-dangerous-direct-browser-access":"true"
+      "Content-Type":"application/json"
     },
     body:JSON.stringify({
       model:"claude-sonnet-4-6",max_tokens:2000,
