@@ -1870,7 +1870,8 @@ function hesapla(){
   // ── 1. PROFİL VERİLERİ ──────────────────────────────────
   const ad          = OB.name   || 'Öğrenci';
   const hedefMeslek = OB.meslek || 'Hedeflenen Meslek';
-  const sinav       = OB.exam   || 'TYT';
+  const sinavRaw = OB.exam || 'TYT';
+  const sinav = sinavRaw==='YKS' ? 'TYT' : sinavRaw;
 
   // ── 2. NET OKUMA ─────────────────────────────────────────
   let toplamNet = 0;
@@ -2342,24 +2343,38 @@ async function anPhoto(){
   const key=getApiKey();
   if(!key) throw new Error('API_KEY_MISSING');
 
-  // ADIM 1: Fotoğraftan sadece netleri oku (basit JSON)
-  const netPrompt=`Bu sınav sonuç karnesi fotoğrafındaki ders netlerini oku.
-Sadece şu JSON formatında ver, başka hiçbir şey yazma:
-{"Türkçe":0,"Matematik":0,"Fizik":0,"Kimya":0,"Biyoloji":0,"Tarih":0,"Coğrafya":0,"Felsefe":0,"Din Kültürü":0}
-Fotoğrafta olmayan dersler 0 kalır. Ondalık kullan (örn: 26.25). TYT ve AYT varsa toplamları yaz.`;
+  // TEK ADIM: Sınav tipini VE netleri aynı anda oku
+  const prompt=`Bu Türk sınav karnesi fotoğrafını analiz et.
+1. Sınav tipini belirle: TYT mi, AYT-SAY mı, AYT-SÖZ mü, AYT-EA mı, LGS mi, KPSS mi?
+   - TYT-TÜRKÇE veya TYT-MATEMATİK varsa → TYT
+   - AYT-MATEMATİK + Fizik/Kimya/Biyoloji varsa → AYT-SAY
+   - Edebiyat + Tarih/Coğrafya varsa → AYT-SÖZ
+   - Hem Matematik hem Edebiyat varsa → AYT-EA
+   - 8. sınıf / ortaokul ise → LGS
+
+2. Her dersin net sayısını oku.
+
+SADECE şu JSON formatında ver, başka hiçbir şey yazma:
+{
+  "sinav": "TYT",
+  "netler": {
+    "Türkçe": 0, "Matematik": 0, "Fizik": 0, "Kimya": 0,
+    "Biyoloji": 0, "Tarih": 0, "Coğrafya": 0, "Felsefe": 0,
+    "Din Kültürü": 0, "Edebiyat": 0, "Fen Bilimleri": 0,
+    "İnkılap Tarihi": 0, "Yabancı Dil": 0, "Vatandaşlık": 0
+  }
+}
+Ondalık kullan (örn: 26.25). Fotoğrafta olmayan dersler 0 kalır.`;
 
   const res=await fetch("/.netlify/functions/api",{
     method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "Content-Type":"application/json"
-    },
+    headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
       model:"claude-sonnet-4-6",
-      max_tokens:300,
+      max_tokens:400,
       messages:[{role:"user",content:[
         {type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},
-        {type:"text",text:netPrompt}
+        {type:"text",text:prompt}
       ]}]
     })
   });
@@ -2369,23 +2384,36 @@ Fotoğrafta olmayan dersler 0 kalır. Ondalık kullan (örn: 26.25). TYT ve AYT 
   const raw=(d.content?.map(c=>c.text||'').join('')||'').replace(/```json|```/g,'').trim();
   if(!raw) throw new Error('Fotoğraftan veri okunamadı');
 
-  const netler=JSON.parse(raw);
+  const parsed=JSON.parse(raw);
+  const netler=parsed.netler||parsed;
+  const okunanSinav=parsed.sinav||null;
 
-  // ADIM 2: Okunan netleri forma doldur
+  // Sınav tipini otomatik güncelle
+  if(okunanSinav && SUBJS_MAP[okunanSinav]){
+    OB.exam=okunanSinav;
+    LS.set('k_profile', JSON.stringify(OB));
+    // Ders gridini yenile
+    const g=document.getElementById('sGrid');if(g)g.innerHTML='';
+    buildSubjGrid();
+    // Sınav butonunu seç
+    document.querySelectorAll('.exam-btn').forEach(b=>b.classList.remove('sel'));
+    const btn=document.getElementById('et'+okunanSinav.replace('-',''));
+    if(btn)btn.classList.add('sel');
+  }
+
+  // Netleri forma doldur
   let okunan=0;
   getSUBJS().forEach(s=>{
     const el=document.getElementById('ni-'+s.n);
-    if(!el) return;
+    if(!el)return;
     const v=netler[s.n];
     if(v!==undefined&&v!==0){
-      el.value=parseFloat(v.toFixed(2));
+      el.value=parseFloat(parseFloat(v).toFixed(2));
       okunan++;
     }
   });
 
   if(okunan===0) throw new Error('Fotoğraftaki netler okunamadı. Elle gir.');
-
-  // ADIM 3: hesapla() ile yerel analiz yap
   return hesapla();
 }
 
