@@ -2297,12 +2297,13 @@ function getYksSiralama(puan){
     {p:480,s:500},{p:460,s:1500},{p:440,s:4000},{p:420,s:8000},
     {p:400,s:15000},{p:380,s:28000},{p:360,s:50000},{p:340,s:85000},
     {p:320,s:140000},{p:300,s:210000},{p:280,s:300000},{p:260,s:420000},
-    {p:240,s:560000},{p:220,s:720000},{p:200,s:900000},{p:180,s:1100000},
+    {p:240,s:560000},{p:220,s:720000},{p:200,s:900000},{p:180,s:1050000},
+{p:160,s:1150000},{p:140,s:1200000},{p:120,s:1250000},{p:100,s:1280000},
   ];
   let r=tablo[tablo.length-1];
   for(let i=0;i<tablo.length;i++){if(puan>=tablo[i].p){r=tablo[i];break;}}
   // interpolasyon
-  if(r.s>=1000000)return'~1.000.000+';
+  if(r.s>=1200000)return'~1.200.000+';
   const k=r.s>=1000?Math.round(r.s/1000)+'K':r.s;
   return '~'+r.s.toLocaleString('tr-TR');
 }
