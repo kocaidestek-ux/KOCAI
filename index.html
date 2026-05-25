@@ -3038,6 +3038,11 @@ async function anPhotoFor(tip){
   const imgData = tip==='ayt' ? b64AYT : b64;
   if(!imgData) return;
 
+  // MIME type otomatik tespit: PNG mi JPEG mi?
+  const mimeType = imgData.startsWith('iVBOR') ? 'image/png'
+                 : imgData.startsWith('/9j/') ? 'image/jpeg'
+                 : 'image/png'; // bilinmiyorsa PNG kabul et
+
   const prompt = tip==='ayt'
     ? `Bu görsel bir AYT sınav karnesi veya sınav sonuç tablosudur.
 Eğer tablo formatındaysa (birden fazla satır/sınav varsa), EN SON (en alttaki/en güncel) satırdaki netleri kullan.
@@ -3069,7 +3074,7 @@ Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır.`;
     },
     body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,
       messages:[{role:'user',content:[
-        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:imgData}},
+        {type:'image',source:{type:'base64',media_type:mimeType,data:imgData}},
         {type:'text',text:prompt}
       ]}]
     })
