@@ -1086,21 +1086,21 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
           <!-- TYT -->
           <div>
-            <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--teal);margin-bottom:6px;">TYT Karnesi</div>
+            <div id="dualLblTYT" style="font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--teal);margin-bottom:6px;">TYT Karnesi</div>
             <div class="upload-z" id="uzTYT" style="padding:14px 8px;">
               <input type="file" accept="image/*" id="fiTYT" onchange="onFile(event,'tyt')"/>
               <div class="upload-ic" style="font-size:1.4rem;">📷</div>
-              <div class="upload-ttl" style="font-size:0.72rem;">TYT Yükle</div>
+              <div class="upload-ttl" id="dualTtlTYT" style="font-size:0.72rem;">TYT Yükle</div>
             </div>
             <div class="fp" id="fpTYT" style="display:none;"><img id="fpITYT" src="" alt="" style="max-height:80px;border-radius:8px;width:100%;object-fit:cover;"/></div>
           </div>
           <!-- AYT -->
           <div>
-            <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">AYT Karnesi</div>
+            <div id="dualLblAYT" style="font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">AYT Karnesi</div>
             <div class="upload-z" id="uzAYT" style="padding:14px 8px;">
               <input type="file" accept="image/*" id="fiAYT" onchange="onFile(event,'ayt')"/>
               <div class="upload-ic" style="font-size:1.4rem;">📷</div>
-              <div class="upload-ttl" style="font-size:0.72rem;">AYT Yükle</div>
+              <div class="upload-ttl" id="dualTtlAYT" style="font-size:0.72rem;">AYT Yükle</div>
             </div>
             <div class="fp" id="fpAYT" style="display:none;"><img id="fpIAYT" src="" alt="" style="max-height:80px;border-radius:8px;width:100%;object-fit:cover;"/></div>
           </div>
@@ -1113,11 +1113,11 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 
       <div id="manArea" style="display:none;">
         <div id="tytSection">
-          <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--teal);margin:10px 0 6px;">TYT Netleri</div>
+          <div id="tytSectionLbl" style="font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--teal);margin:10px 0 6px;">TYT Netleri</div>
           <div class="subj-g" id="sGrid"></div>
         </div>
         <div id="aytSection" style="display:none;">
-          <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin:14px 0 6px;">AYT Netleri — Alan Seç:</div>
+          <div id="aytSectionLbl" style="font-size:0.62rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin:14px 0 6px;">AYT Netleri — Alan Seç:</div>
           <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
             <button type="button" onclick="setAytAlan('SAY')" id="alanSAY" style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--border2);background:transparent;color:var(--muted2);font-size:0.72rem;cursor:pointer;">Sayısal</button>
             <button type="button" onclick="setAytAlan('EA')"  id="alanEA"  style="padding:6px 12px;border-radius:8px;border:1.5px solid var(--border2);background:transparent;color:var(--muted2);font-size:0.72rem;cursor:pointer;">Eşit Ağırlık</button>
@@ -2393,12 +2393,28 @@ function setAnMode(mod){
     if(single)single.style.display='none';
     if(dual){
       dual.style.display='block';
-      // KPSS modunda AYT label'larını güncelle
-      if(mod==='kpss-full'){
-        const tytLbl=dual.querySelector('[style*="teal"]');
-        const aytLbl=dual.querySelector('[style*="gold"]');
-        if(tytLbl)tytLbl.textContent='GY/GK Karnesi';
-        if(aytLbl)aytLbl.textContent='Alan Sınavı Karnesi';
+      // KPSS modunda etiketleri güncelle
+      const isKPSS = mod==='kpss-full';
+      const lblTYT=document.getElementById('dualLblTYT');
+      const lblAYT=document.getElementById('dualLblAYT');
+      const ttlTYT=document.getElementById('dualTtlTYT');
+      const ttlAYT=document.getElementById('dualTtlAYT');
+      const tytSecLbl=document.getElementById('tytSectionLbl');
+      const aytSecLbl=document.getElementById('aytSectionLbl');
+      if(isKPSS){
+        if(lblTYT)lblTYT.textContent='GY/GK Karnesi';
+        if(lblAYT)lblAYT.textContent='Alan Sınavı Karnesi';
+        if(ttlTYT)ttlTYT.textContent='GY/GK Yükle';
+        if(ttlAYT)ttlAYT.textContent='Alan Yükle';
+        if(tytSecLbl)tytSecLbl.textContent='GY/GK Netleri';
+        if(aytSecLbl)aytSecLbl.textContent='Alan Sınavı Netleri — Alan Seç:';
+      } else {
+        if(lblTYT)lblTYT.textContent='TYT Karnesi';
+        if(lblAYT)lblAYT.textContent='AYT Karnesi';
+        if(ttlTYT)ttlTYT.textContent='TYT Yükle';
+        if(ttlAYT)ttlAYT.textContent='AYT Yükle';
+        if(tytSecLbl)tytSecLbl.textContent='TYT Netleri';
+        if(aytSecLbl)aytSecLbl.textContent='AYT Netleri — Alan Seç:';
       }
     }
     if(aytSec&&manOn)aytSec.style.display='block';
@@ -3051,12 +3067,21 @@ Sadece şu JSON formatında yanıt ver, başka hiçbir şey yazma:
 {"alan":"SAY","netler":{"Matematik":0,"Fizik":0,"Kimya":0,"Biyoloji":0,"Türkçe":0,"Tarih":0,"Coğrafya":0,"Felsefe":0}}
 Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır. alan değeri: SAY/EA/SOZ`
     : anMod==='gygk'||anMod==='kpss-full'
-    ? `Bu görsel bir KPSS GY/GK sınav karnesi veya sonuç tablosudur.
-Eğer tablo formatındaysa (birden fazla satır/sınav varsa), EN SON satırdaki netleri kullan.
-Her dersin NET sayısını oku.
+    ? `Bu görsel bir KPSS GY/GK sınav karnesi veya ÖSYM sonuç belgesidir.
+Görselde her dersin Doğru (D) ve Yanlış (Y) sayıları bulunabilir.
+Net = D - (Y/4) formülüyle hesapla.
+Eğer tabloda birden fazla sınav satırı varsa EN SON satırdaki değerleri kullan.
+
+Ders isim eşleştirmesi (karnede farklı yazılabilir):
+- "Türkçe" = Genel Türkçe, Türkçe Testi, Dil Bilgisi
+- "Matematik" = Genel Matematik, Matematik Testi, Sayısal
+- "Tarih" = Türk Tarihi, Tarih Testi, Atatürk İlkeleri, Türkiye Tarihi
+- "Coğrafya" = Türkiye Coğrafyası, Coğrafya Testi
+- "Vatandaşlık" = Vatandaşlık ve Anayasa, Anayasa, Hukuk, Türk Anayasa Hukuku, Vatandaşlık Bilgisi
+
 Sadece şu JSON formatında yanıt ver, başka hiçbir şey yazma:
 {"sinav":"KPSS","netler":{"Türkçe":0,"Matematik":0,"Tarih":0,"Coğrafya":0,"Vatandaşlık":0}}
-Ondalık kullan. Görselde olmayan dersler 0 kalır.`
+Ondalık kullan (örn: 18.75). Görselde olmayan/okunamayan dersler 0 kalır.`
     : `Bu görsel bir TYT sınav karnesi veya sınav sonuç tablosudur.
 Eğer tablo formatındaysa (birden fazla satır/sınav varsa), EN SON (en alttaki/en güncel) satırdaki netleri kullan.
 Her dersin NET sayısını oku.
@@ -3089,7 +3114,7 @@ Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır.`;
 
   // Tüm netler 0 mu kontrol et
   const hepsiBos=Object.values(netler).every(v=>!v||v===0);
-  if(hepsiBos) throw new Error('Görselden net okunamadı. Netlerini elle girerek devam et.');
+  // hepsiBos ise formu aç, kullanıcı elle düzeltsin — ama exception fırlatma
 
   if(tip==='ayt'){
     // AYT alanını otomatik seç
@@ -3111,14 +3136,13 @@ Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır.`;
   } else {
     // TYT gridine doldur
     if(!manOn)togMan();
-    let tytDoldu=false;
     getSUBJS().forEach(s=>{
       const el=document.getElementById('ni-'+s.n);
       if(!el)return;
       const v=netler[s.n];
-      if(v!==undefined&&v!==0){el.value=parseFloat(parseFloat(v).toFixed(2));tytDoldu=true;}
+      if(v!==undefined&&v!==0){el.value=parseFloat(parseFloat(v).toFixed(2));}
     });
-    if(!tytDoldu) throw new Error('TYT görselden net okunamadı. Elle gir.');
+    // Not: tytDoldu kontrolü kaldırıldı — kısmi okuma da kabul edilir, kullanıcı eksikleri tamamlar
   }
 }
 
