@@ -484,7 +484,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 <style>
   @keyframes charFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
   .coach-wrap{display:flex;align-items:flex-end;gap:12px;background:linear-gradient(135deg,rgba(245,200,66,0.06),rgba(46,184,176,0.04));border:1px solid var(--border2);border-radius:20px;padding:16px;margin-bottom:16px;}
-  .coach-img{width:68px;height:auto;flex-shrink:0;filter:drop-shadow(0 4px 14px rgba(245,200,66,0.22));animation:charFloat 3s ease-in-out infinite;}
+  .coach-img{width:68px;height:auto;flex-shrink:0;mix-blend-mode:screen;filter:drop-shadow(0 4px 14px rgba(245,200,66,0.22));animation:charFloat 3s ease-in-out infinite;}
   .coach-bubble{flex:1;background:rgba(0,0,0,0.18);border-radius:14px 14px 14px 4px;padding:12px 14px;position:relative;}
   .coach-bubble::before{content:'';position:absolute;left:-7px;bottom:14px;border:7px solid transparent;border-right-color:rgba(0,0,0,0.18);border-left:0;}
   .coach-lbl{font-size:0.53rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:5px;}
@@ -571,6 +571,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
     /* mix-blend-mode:screen — siyah arka plan görünmez olur */
     #sp-char{
       width:185px;height:auto;
+      mix-blend-mode:screen;
       animation:charJump 0.9s cubic-bezier(.22,1,.36,1) 2.2s both;
     }
     #sp-char.floatOn{
@@ -896,7 +897,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
   </div>
   <div class="nav-tabs">
     <button class="nav-tab act" onclick="goP('dash',this)">Panel</button>
-    <button class="nav-tab" onclick="goP('analiz',this)">Analiz</button>
+    <button class="nav-tab" onclick="goP('analiz',this);initAnalizPage()">Analiz</button>
     <button class="nav-tab" onclick="goP('ayar',this)">Ayarlar</button>
   </div>
 </nav>
@@ -1922,6 +1923,7 @@ function initApp(){
   initCoaching();
   initYakinMod();
   renderHaftalikOzet();
+  initAnalizPage();
 }
 
 function initYakinMod() {
@@ -2298,12 +2300,20 @@ async function startAn(){
         return;
       }
     } else if(b64){
-      try{ await anPhoto(); }
+      if(!getApiKey()){
+        document.getElementById('loadArea').classList.remove('on');
+        document.getElementById('upForm').style.display='block';
+        if(!manOn)togMan();
+        alert('API anahtarı bulunamadı! Netlerini elle giriniz.');
+        return;
+      }
+      try{ await anPhotoFor('tyt'); }
       catch(e){
         console.warn('Foto okunamadı:',e.message);
         document.getElementById('loadArea').classList.remove('on');
         document.getElementById('upForm').style.display='block';
-        alert('📸 Fotoğraf okunamadı.\nNetlerini elle girerek devam edebilirsin.');
+        if(!manOn)togMan();
+        alert('📸 Fotoğraf okunamadı.\nNetlerini elle girerek devam edebilirsin.\n\n(Hata: '+e.message+')');
         return;
       }
     }
@@ -3035,6 +3045,13 @@ Alan tipini (SAY/EA/SOZ) ve her dersin NET sayısını oku.
 Sadece şu JSON formatında yanıt ver, başka hiçbir şey yazma:
 {"alan":"SAY","netler":{"Matematik":0,"Fizik":0,"Kimya":0,"Biyoloji":0,"Türkçe":0,"Tarih":0,"Coğrafya":0,"Felsefe":0}}
 Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır. alan değeri: SAY/EA/SOZ`
+    : anMod==='gygk'||anMod==='kpss-full'
+    ? `Bu görsel bir KPSS GY/GK sınav karnesi veya sonuç tablosudur.
+Eğer tablo formatındaysa (birden fazla satır/sınav varsa), EN SON satırdaki netleri kullan.
+Her dersin NET sayısını oku.
+Sadece şu JSON formatında yanıt ver, başka hiçbir şey yazma:
+{"sinav":"KPSS","netler":{"Türkçe":0,"Matematik":0,"Tarih":0,"Coğrafya":0,"Vatandaşlık":0}}
+Ondalık kullan. Görselde olmayan dersler 0 kalır.`
     : `Bu görsel bir TYT sınav karnesi veya sınav sonuç tablosudur.
 Eğer tablo formatındaysa (birden fazla satır/sınav varsa), EN SON (en alttaki/en güncel) satırdaki netleri kullan.
 Her dersin NET sayısını oku.
@@ -3463,7 +3480,7 @@ function removeBgFromChar(img){
     ctx.putImageData(id,0,0);
     img.src=c.toDataURL('image/png');
     img.style.mixBlendMode='normal'; // artık gerek yok
-  }catch(e){}
+  }catch(e){img.style.mixBlendMode='screen';}
 }
 
 function hideSplash(){
