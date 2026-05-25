@@ -3067,27 +3067,22 @@ Sadece şu JSON formatında yanıt ver, başka hiçbir şey yazma:
 {"alan":"SAY","netler":{"Matematik":0,"Fizik":0,"Kimya":0,"Biyoloji":0,"Türkçe":0,"Tarih":0,"Coğrafya":0,"Felsefe":0}}
 Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır. alan değeri: SAY/EA/SOZ`
     : anMod==='gygk'||anMod==='kpss-full'
-    ? `Bu görsel bir KPSS GY/GK sınav karnesi veya ÖSYM sonuç belgesidir.
-Görselde her dersin Doğru (D) ve Yanlış (Y) sayıları bulunabilir.
-Net = D - (Y/4) formülüyle hesapla.
-Eğer tabloda birden fazla sınav satırı varsa EN SON satırdaki değerleri kullan.
-
-Ders isim eşleştirmesi (karnede farklı yazılabilir):
-- "Türkçe" = Genel Türkçe, Türkçe Testi, Dil Bilgisi
-- "Matematik" = Genel Matematik, Matematik Testi, Sayısal
-- "Tarih" = Türk Tarihi, Tarih Testi, Atatürk İlkeleri, Türkiye Tarihi
-- "Coğrafya" = Türkiye Coğrafyası, Coğrafya Testi
-- "Vatandaşlık" = Vatandaşlık ve Anayasa, Anayasa, Hukuk, Türk Anayasa Hukuku, Vatandaşlık Bilgisi
-
-Sadece şu JSON formatında yanıt ver, başka hiçbir şey yazma:
-{"sinav":"KPSS","netler":{"Türkçe":0,"Matematik":0,"Tarih":0,"Coğrafya":0,"Vatandaşlık":0}}
-Ondalık kullan (örn: 18.75). Görselde olmayan/okunamayan dersler 0 kalır.`
+    ? `KPSS sınav karnesi. "TESTLERDEKİ DOĞRU VE YANLIŞ CEVAP SAYILARI" tablosundan:
+1. Genel Yetenek (GY) satırındaki Doğru ve Yanlış sayılarını bul → GY_net = Doğru - Yanlış/4
+2. Genel Kültür (GK) satırındaki Doğru ve Yanlış sayılarını bul → GK_net = Doğru - Yanlış/4
+GY_net'i Türkçe ve Matematik arasında eşit böl (her biri GY_net/2).
+GK_net'i Tarih, Coğrafya ve Vatandaşlık arasında eşit böl (her biri GK_net/3).
+Ondalık kullan. Döndür:
+{"sinav":"KPSS","netler":{"Türkçe":0,"Matematik":0,"Tarih":0,"Coğrafya":0,"Vatandaşlık":0}}`
     : `Bu görsel bir TYT sınav karnesi veya sınav sonuç tablosudur.
 Eğer tablo formatındaysa (birden fazla satır/sınav varsa), EN SON (en alttaki/en güncel) satırdaki netleri kullan.
 Her dersin NET sayısını oku.
 Sadece şu JSON formatında yanıt ver, başka hiçbir şey yazma:
 {"sinav":"TYT","netler":{"Türkçe":0,"Matematik":0,"Fizik":0,"Kimya":0,"Biyoloji":0,"Tarih":0,"Coğrafya":0,"Felsefe":0,"Din Kültürü":0}}
 Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır.`;
+
+  const kpssSystem = 'Sen bir JSON üreticisin. SADECE ham JSON döndür. Açıklama, markdown, kod bloğu, başka hiçbir şey yazma.';
+  const defaultSystem = 'Sen bir JSON üreticisin. SADECE ham JSON döndür. Açıklama, markdown, kod bloğu yazma.';
 
   const res=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
@@ -3097,7 +3092,8 @@ Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır.`;
       'anthropic-version':'2023-06-01',
       'anthropic-dangerous-direct-browser-access':'true'
     },
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,
+      system: (anMod==='gygk'||anMod==='kpss-full') ? kpssSystem : defaultSystem,
       messages:[{role:'user',content:[
         {type:'image',source:{type:'base64',media_type:mimeType,data:imgData}},
         {type:'text',text:prompt}
