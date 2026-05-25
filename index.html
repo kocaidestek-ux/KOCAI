@@ -2005,6 +2005,7 @@ function togMan(){
 
 function onFile(e, tip){
   const f=e.target.files[0];if(!f)return;
+  e.target.value=''; // aynı dosyayı tekrar seçmeye izin ver
   const r=new FileReader();
   r.onload=ev=>{
     const data=ev.target.result;
@@ -2110,11 +2111,22 @@ async function startAn(){
   try{
     if(anMod==='yks'){
       let tytOkundu=false, aytOkundu=false;
+      let tytHata='', aytHata='';
+      // API key kontrolü
+      if(!getApiKey()){
+        document.getElementById('loadArea').classList.remove('on');
+        document.getElementById('upForm').style.display='block';
+        if(!manOn)togMan();
+        const aytSecEl=document.getElementById('aytSection');if(aytSecEl)aytSecEl.style.display='block';
+        alert('API anahtarı bulunamadı! Netlerini elle giriniz.');
+        return;
+      }
       if(b64){
         try{
           await anPhotoFor('tyt');
           tytOkundu=true;
         }catch(e){
+          tytHata=e.message;
           console.warn('TYT foto okunamadı:',e.message);
         }
       }
@@ -2123,19 +2135,31 @@ async function startAn(){
           await anPhotoFor('ayt');
           aytOkundu=true;
         }catch(e){
+          aytHata=e.message;
           console.warn('AYT foto okunamadı:',e.message);
         }
       }
       // Fotoğraf okundu ama net girilemedi → form aç
-      const herhangiNet=getSUBJS().some(s=>{
+      const herhangiTYTNet=getSUBJS().some(s=>{
         const el=document.getElementById('ni-'+s.n);
         return el&&el.value&&parseFloat(el.value)!==0;
       });
-      if((b64||b64AYT)&&!herhangiNet&&!manOn){
+      const herhangiAYTNet=(AYT_SUBJS[aytAlan]||[]).some(s=>{
+        const el=document.getElementById('ayt-'+s.n);
+        return el&&el.value&&parseFloat(el.value)!==0;
+      });
+      const herhangiNet=herhangiTYTNet||herhangiAYTNet;
+      if((b64||b64AYT)&&!herhangiNet){
         document.getElementById('loadArea').classList.remove('on');
         document.getElementById('upForm').style.display='block';
         if(!manOn)togMan();
-        alert('📸 Fotoğraf okundu ama netler doldurulamadı.\nAşağıdaki alanlara TYT netlerinizi elle girin.');
+        const aytSecEl=document.getElementById('aytSection');
+        if(aytSecEl)aytSecEl.style.display='block';
+        let msg='📸 Görsel(ler) okundu ama netler doldurulamadı.';
+        if(b64&&!herhangiTYTNet){msg+='\n● TYT kısmına netleri elle gir.';if(tytHata)msg+=' ('+tytHata+')';}
+        if(b64AYT&&!herhangiAYTNet){msg+='\n● AYT kısmına netleri elle gir.';if(aytHata)msg+=' ('+aytHata+')';}
+        msg+='\n\nNetleri girdikten sonra Analiz butonuna basabilirsin.';
+        alert(msg);
         return;
       }
     } else if(b64){
@@ -2334,6 +2358,21 @@ function hesapla(){
       dersler.push({name:s.n, net:parseFloat(net.toFixed(2))});
     }
   });
+
+  // YKS modunda: TYT neti yoksa bile AYT neti yeterli (fotoğraf çekildi ama TYT boş bırakıldı)
+  if(dersler.length===0 && anMod==='yks'){
+    const aytBosMu=(AYT_SUBJS[aytAlan]||[]).every(s=>{
+      const el=document.getElementById('ayt-'+s.n);
+      return !el||el.value.trim()==='';
+    });
+    if(!aytBosMu){
+      // AYT neti var, TYT yok → 0 TYT neti olarak devam et
+      // dersler boş kalır ama AYT section hesapla-10'da işlenir
+      toplamNet=0;
+      // Boş kalmasın diye placeholder TYT kaydı ekliyoruz (0 net)
+      getSUBJS().forEach(s=>dersler.push({name:s.n,net:0}));
+    }
+  }
 
   if(dersler.length===0){
     document.getElementById('loadArea').classList.remove('on');
@@ -2855,14 +2894,18 @@ async function anPhotoFor(tip){
   if(!imgData) return;
 
   const prompt = tip==='ayt'
-    ? `Bu AYT sınav karnesi. Alan tipini ve her dersin netini oku.
-Sadece şu JSON formatında ver:
+    ? `Bu görsel bir AYT sınav karnesi veya sınav sonuç tablosudur.
+Eğer tablo formatındaysa (birden fazla satır/sınav varsa), EN SON (en alttaki/en güncel) satırdaki netleri kullan.
+Alan tipini (SAY/EA/SOZ) ve her dersin NET sayısını oku.
+Sadece şu JSON formatında yanıt ver, başka hiçbir şey yazma:
 {"alan":"SAY","netler":{"Matematik":0,"Fizik":0,"Kimya":0,"Biyoloji":0,"Türkçe":0,"Tarih":0,"Coğrafya":0,"Felsefe":0}}
-Ondalık kullan. Fotoğrafta olmayan dersler 0 kalır. alan: SAY/EA/SOZ`
-    : `Bu TYT sınav karnesi. Her dersin netini oku.
-Sadece şu JSON formatında ver:
+Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır. alan değeri: SAY/EA/SOZ`
+    : `Bu görsel bir TYT sınav karnesi veya sınav sonuç tablosudur.
+Eğer tablo formatındaysa (birden fazla satır/sınav varsa), EN SON (en alttaki/en güncel) satırdaki netleri kullan.
+Her dersin NET sayısını oku.
+Sadece şu JSON formatında yanıt ver, başka hiçbir şey yazma:
 {"sinav":"TYT","netler":{"Türkçe":0,"Matematik":0,"Fizik":0,"Kimya":0,"Biyoloji":0,"Tarih":0,"Coğrafya":0,"Felsefe":0,"Din Kültürü":0}}
-Ondalık kullan. Fotoğrafta olmayan dersler 0 kalır.`;
+Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır.`;
 
   const res=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
@@ -2883,33 +2926,42 @@ Ondalık kullan. Fotoğrafta olmayan dersler 0 kalır.`;
   if(d.error) throw new Error(d.error.message);
   const raw=(d.content?.map(c=>c.text||'').join('')||'').replace(/```json|```/g,'').trim();
   if(!raw) throw new Error('Foto okunamadı');
-  const parsed=JSON.parse(raw);
+  let parsed;
+  try{ parsed=JSON.parse(raw); }catch(e){ throw new Error('Görselden veri okunamadı. Elle gir.'); }
   const netler=parsed.netler||parsed;
+
+  // Tüm netler 0 mu kontrol et
+  const hepsiBos=Object.values(netler).every(v=>!v||v===0);
+  if(hepsiBos) throw new Error('Görselden net okunamadı. Netlerini elle girerek devam et.');
 
   if(tip==='ayt'){
     // AYT alanını otomatik seç
     const alan=parsed.alan||'SAY';
     if(['SAY','EA','SOZ'].includes(alan)) setAytAlan(alan);
     // AYT gridine doldur
+    let aytDoldu=false;
     Object.entries(netler).forEach(([ders,net])=>{
       if(net&&net!==0){
         const el=document.getElementById('ayt-'+ders);
-        if(el)el.value=parseFloat(parseFloat(net).toFixed(2));
+        if(el){el.value=parseFloat(parseFloat(net).toFixed(2));aytDoldu=true;}
       }
     });
     // AYT section göster
     if(!manOn)togMan();
     const aytSec=document.getElementById('aytSection');
     if(aytSec)aytSec.style.display='block';
+    if(!aytDoldu) throw new Error('AYT görselden net okunamadı. Elle gir.');
   } else {
     // TYT gridine doldur
     if(!manOn)togMan();
+    let tytDoldu=false;
     getSUBJS().forEach(s=>{
       const el=document.getElementById('ni-'+s.n);
       if(!el)return;
       const v=netler[s.n];
-      if(v!==undefined&&v!==0) el.value=parseFloat(parseFloat(v).toFixed(2));
+      if(v!==undefined&&v!==0){el.value=parseFloat(parseFloat(v).toFixed(2));tytDoldu=true;}
     });
+    if(!tytDoldu) throw new Error('TYT görselden net okunamadı. Elle gir.');
   }
 }
 
@@ -3207,7 +3259,7 @@ function renderRes(data){
 }
 
 function resetAn(){
-  b64=null;manOn=false;
+  b64=null;b64AYT=null;manOn=false;
   const old=document.getElementById('_kocaiHeader');if(old)old.remove();
   document.getElementById('upForm').style.display='block';
   document.getElementById('resArea').classList.remove('on');
@@ -3215,10 +3267,22 @@ function resetAn(){
   document.getElementById('uz').classList.remove('has');
   document.getElementById('uz').querySelector('.upload-ttl').textContent='Fotoğraf Yükle';
   document.getElementById('fp').style.display='none';
+  // AYT reset
+  const fpAYT=document.getElementById('fpAYT');if(fpAYT)fpAYT.style.display='none';
+  const fpIAYT=document.getElementById('fpIAYT');if(fpIAYT)fpIAYT.src='';
+  const uzAYT=document.getElementById('uzAYT');if(uzAYT){const t=uzAYT.querySelector('.upload-ttl');if(t)t.textContent='AYT Yükle';}
+  const fpTYT=document.getElementById('fpTYT');if(fpTYT)fpTYT.style.display='none';
+  const fpITYT=document.getElementById('fpITYT');if(fpITYT)fpITYT.src='';
+  const uzTYT=document.getElementById('uzTYT');if(uzTYT){const t=uzTYT.querySelector('.upload-ttl');if(t)t.textContent='TYT Yükle';}
+  const fiAYT=document.getElementById('fiAYT');if(fiAYT)fiAYT.value='';
+  const fiTYT=document.getElementById('fiTYT');if(fiTYT)fiTYT.value='';
+  const fi=document.getElementById('fi');if(fi)fi.value='';
+  const aytSec=document.getElementById('aytSection');if(aytSec)aytSec.style.display='none';
   document.getElementById('manArea').style.display='none';
   document.getElementById('mArr').textContent='▸';
   document.getElementById('startB').disabled=true;
   getSUBJS().forEach(s=>{const el=document.getElementById('ni-'+s.n);if(el)el.value='';});
+  const aytG=document.getElementById('aytGrid');if(aytG)aytG.innerHTML='';
 }
 
 // ── PWA ──
