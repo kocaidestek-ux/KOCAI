@@ -3106,10 +3106,13 @@ Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır.`;
   });
   const d=await res.json();
   if(d.error) throw new Error(d.error.message);
-  const raw=(d.content?.map(c=>c.text||'').join('')||'').replace(/```json|```/g,'').trim();
-  if(!raw) throw new Error('Foto okunamadı');
+  const rawFull=(d.content?.map(c=>c.text||'').join('')||'');
+  // JSON objesini bul — başka metin olsa bile
+  const jsonMatch=rawFull.match(/\{[\s\S]*\}/);
+  const raw=jsonMatch?jsonMatch[0]:'';
+  if(!raw) throw new Error('API boş yanıt döndürdü. Ham: '+rawFull.substring(0,200));
   let parsed;
-  try{ parsed=JSON.parse(raw); }catch(e){ throw new Error('Görselden veri okunamadı. Elle gir.'); }
+  try{ parsed=JSON.parse(raw); }catch(e){ throw new Error('JSON parse hatası. Ham yanıt: '+rawFull.substring(0,300)); }
   const netler=parsed.netler||parsed;
 
   // Tüm netler 0 mu kontrol et
