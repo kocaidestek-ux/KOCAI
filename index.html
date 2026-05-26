@@ -483,7 +483,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 }
 <style>
   @keyframes charFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-  .coach-wrap{display:flex;align-items:flex-end;gap:12px;background:linear-gradient(135deg,rgba(245,200,66,0.06),rgba(46,184,176,0.04));border:1px solid var(--border2);border-radius:20px;padding:16px;margin-bottom:16px;}
+  .coach-wrap{display:flex;align-items:flex-end;gap:12px;background:rgba(8,8,15,0.82);border:1px solid var(--border2);border-radius:20px;padding:16px;margin-bottom:16px;}
   .coach-img{width:68px;height:auto;flex-shrink:0;mix-blend-mode:screen;filter:drop-shadow(0 4px 14px rgba(245,200,66,0.22));animation:charFloat 3s ease-in-out infinite;}
   .coach-bubble{flex:1;background:rgba(0,0,0,0.18);border-radius:14px 14px 14px 4px;padding:12px 14px;position:relative;}
   .coach-bubble::before{content:'';position:absolute;left:-7px;bottom:14px;border:7px solid transparent;border-right-color:rgba(0,0,0,0.18);border-left:0;}
@@ -1085,24 +1085,24 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
       <div id="uploadDual" style="display:none;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
           <!-- TYT -->
-          <div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
             <div id="dualLblTYT" style="font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--teal);margin-bottom:6px;">TYT Karnesi</div>
-            <div class="upload-z" id="uzTYT" style="padding:14px 8px;">
+            <div class="upload-z" id="uzTYT" style="padding:14px 8px;position:relative;overflow:hidden;">
               <input type="file" accept="image/*" id="fiTYT" onchange="onFile(event,'tyt')"/>
-              <div class="upload-ic" style="font-size:1.4rem;">📷</div>
+              <div class="upload-ic" style="font-size:1.4rem;" id="uzTYTic">📷</div>
               <div class="upload-ttl" id="dualTtlTYT" style="font-size:0.72rem;">TYT Yükle</div>
+              <img id="fpITYT" src="" alt="" style="display:none;max-height:100px;width:100%;object-fit:cover;border-radius:8px;margin-top:6px;"/>
             </div>
-            <div class="fp" id="fpTYT" style="display:none;"><img id="fpITYT" src="" alt="" style="max-height:80px;border-radius:8px;width:100%;object-fit:cover;"/></div>
           </div>
           <!-- AYT -->
-          <div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
             <div id="dualLblAYT" style="font-size:0.6rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;">AYT Karnesi</div>
-            <div class="upload-z" id="uzAYT" style="padding:14px 8px;">
+            <div class="upload-z" id="uzAYT" style="padding:14px 8px;position:relative;overflow:hidden;">
               <input type="file" accept="image/*" id="fiAYT" onchange="onFile(event,'ayt')"/>
-              <div class="upload-ic" style="font-size:1.4rem;">📷</div>
+              <div class="upload-ic" style="font-size:1.4rem;" id="uzAYTic">📷</div>
               <div class="upload-ttl" id="dualTtlAYT" style="font-size:0.72rem;">AYT Yükle</div>
+              <img id="fpIAYT" src="" alt="" style="display:none;max-height:100px;width:100%;object-fit:cover;border-radius:8px;margin-top:6px;"/>
             </div>
-            <div class="fp" id="fpAYT" style="display:none;"><img id="fpIAYT" src="" alt="" style="max-height:80px;border-radius:8px;width:100%;object-fit:cover;"/></div>
           </div>
         </div>
       </div>
@@ -2148,14 +2148,12 @@ function onFile(e, tip){
     const data=ev.target.result;
     if(tip==='ayt'){
       b64AYT=data.split(',')[1];
-      // AYT preview
       const img=document.getElementById('fpIAYT');
-      const fp=document.getElementById('fpAYT');
       const uz=document.getElementById('uzAYT');
-      if(img){img.src=data;img.style.cssText='max-height:80px;border-radius:8px;width:100%;object-fit:cover;display:block;';}
-      if(fp)fp.style.display='block';
-      if(uz){const t=uz.querySelector('.upload-ttl');if(t)t.textContent='✦ AYT Yüklendi';}
-      // AYT grid aç
+      const ic=document.getElementById('uzAYTic');
+      if(img){img.src=data;img.style.display='block';}
+      if(ic)ic.style.display='none';
+      if(uz){const t=uz.querySelector('.upload-ttl');if(t)t.textContent='✦ Alan Yüklendi';}
       if(!manOn)togMan();
       const aytSec=document.getElementById('aytSection');
       if(aytSec)aytSec.style.display='block';
@@ -2163,13 +2161,13 @@ function onFile(e, tip){
       else buildAytGrid();
     } else {
       b64=data.split(',')[1];
-      if(anMod==='yks'){
+      if(anMod==='yks'||anMod==='kpss-full'){
         const img=document.getElementById('fpITYT');
-        const fp=document.getElementById('fpTYT');
         const uz=document.getElementById('uzTYT');
-        if(img){img.src=data;img.style.cssText='max-height:80px;border-radius:8px;width:100%;object-fit:cover;display:block;';}
-        if(fp)fp.style.display='block';
-        if(uz){const t=uz.querySelector('.upload-ttl');if(t)t.textContent='✦ TYT Yüklendi';}
+        const ic=document.getElementById('uzTYTic');
+        if(img){img.src=data;img.style.display='block';}
+        if(ic)ic.style.display='none';
+        if(uz){const t=uz.querySelector('.upload-ttl');if(t)t.textContent='✦ Yüklendi';}
       } else {
         const fpI=document.getElementById('fpI');
         const fp=document.getElementById('fp');
