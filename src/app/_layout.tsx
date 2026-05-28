@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router, Stack } from 'expo-router'
 import { useEffect } from 'react'
 import { Platform } from 'react-native'
@@ -9,9 +10,16 @@ export default function RootLayout() {
       if (session) {
         router.replace('/home')
       } else {
-        const karakter = Platform.OS === 'web' ? localStorage.getItem('karakter') : null
-        if (karakter) router.replace('/login')
-        else router.replace('/splash')
+        if (Platform.OS === 'web') {
+          const karakter = localStorage.getItem('karakter')
+          if (karakter) router.replace('/login')
+          else router.replace('/splash')
+        } else {
+          AsyncStorage.getItem('karakter').then(karakter => {
+            if (karakter) router.replace('/login')
+            else router.replace('/splash')
+          })
+        }
       }
     })
     return () => listener.subscription.unsubscribe()
