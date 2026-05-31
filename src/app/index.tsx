@@ -1,19 +1,33 @@
-import { Redirect } from 'expo-router'
-import { useEffect, useState } from 'react'
-import { ActivityIndicator, Platform, View } from 'react-native'
-import { supabase } from '../constants/supabase'
+Set-Content src\app\index.tsx @'
+import { Redirect } from "expo-router"
+import { useEffect, useState } from "react"
+import { ActivityIndicator, Platform, View } from "react-native"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { supabase } from "../constants/supabase"
 
 export default function Index() {
   const [session, setSession] = useState<any>(undefined)
-  const karakter = Platform.OS === 'web' ? localStorage.getItem('karakter') : null
+  const [karakter, setKarakter] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session))
+    const init = async () => {
+      const { data } = await supabase.auth.getSession()
+      setSession(data.session)
+      if (Platform.OS === "web") {
+        setKarakter(localStorage.getItem("karakter"))
+      } else {
+        const k = await AsyncStorage.getItem("karakter")
+        setKarakter(k)
+      }
+      setLoading(false)
+    }
+    init()
   }, [])
 
-  if (session === undefined) {
+  if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#111', justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, backgroundColor: "#111", justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator color="#F5C518" size="large" />
       </View>
     )
@@ -23,3 +37,4 @@ export default function Index() {
   if (session) return <Redirect href="/home" />
   return <Redirect href="/login" />
 }
+'@
