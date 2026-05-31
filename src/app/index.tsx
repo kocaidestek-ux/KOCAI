@@ -1,4 +1,4 @@
-Set-Content src\app\index.tsx @'
+
 import { Redirect } from "expo-router"
 import { useEffect, useState } from "react"
 import { ActivityIndicator, Platform, View } from "react-native"
