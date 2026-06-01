@@ -3085,22 +3085,19 @@ Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır.`;
   const kpssSystem = 'Sen bir JSON üreticisin. SADECE ham JSON döndür. Açıklama, markdown, kod bloğu, başka hiçbir şey yazma.';
   const defaultSystem = 'Sen bir JSON üreticisin. SADECE ham JSON döndür. Açıklama, markdown, kod bloğu yazma.';
 
-  const res=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key':getApiKey(),
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,
-      system: (anMod==='gygk'||anMod==='kpss-full') ? kpssSystem : defaultSystem,
-      messages:[{role:'user',content:[
-        {type:'image',source:{type:'base64',media_type:mimeType,data:imgData}},
-        {type:'text',text:prompt}
-      ]}]
-    })
-  });
+ const res=await fetch('/api/chat',{
+  method:'POST',
+  headers:{
+    'Content-Type':'application/json'
+  },
+  body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,
+    system: (anMod==='gygk'||anMod==='kpss-full') ? kpssSystem : defaultSystem,
+    messages:[{role:'user',content:[
+      {type:'image',source:{type:'base64',media_type:mimeType,data:imgData}},
+      {type:'text',text:prompt}
+    ]}]
+  })
+});
   const d=await res.json();
   if(d.error) throw new Error(d.error.message);
   const rawFull=(d.content?.map(c=>c.text||'').join('')||'');
