@@ -2250,15 +2250,7 @@ async function startAn(){
     if(anMod==='yks'){
       let tytOkundu=false, aytOkundu=false;
       let tytHata='', aytHata='';
-      // API key kontrolü
-      if(!getApiKey()){
-        document.getElementById('loadArea').classList.remove('on');
-        document.getElementById('upForm').style.display='block';
-        if(!manOn)togMan();
-        const aytSecEl=document.getElementById('aytSection');if(aytSecEl)aytSecEl.style.display='block';
-        alert('API anahtarı bulunamadı! Netlerini elle giriniz.');
-        return;
-      }
+     
       if(b64){
         try{
           await anPhotoFor('tyt');
@@ -2301,13 +2293,7 @@ async function startAn(){
         return;
       }
     } else if(b64){
-      if(!getApiKey()){
-        document.getElementById('loadArea').classList.remove('on');
-        document.getElementById('upForm').style.display='block';
-        if(!manOn)togMan();
-        alert('API anahtarı bulunamadı! Netlerini elle giriniz.');
-        return;
-      }
+      
       try{ await anPhotoFor('tyt'); }
       catch(e){
         console.warn('Foto okunamadı:',e.message);
@@ -3148,8 +3134,7 @@ async function anPhoto(){
 }
 
 async function anManual(){
-  const key=getApiKey();
-  if(!key) throw new Error('API_KEY_MISSING');
+  
   let tot=0;
   const subs=SUBJS.map(s=>{const v=parseFloat(document.getElementById('ni-'+s.n)?.value)||0;tot+=v;return{name:s.n,net:v};});
   const res=await fetch("/api/proxy",{
