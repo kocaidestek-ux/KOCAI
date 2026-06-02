@@ -2587,12 +2587,13 @@ function hesapla(){
   function sevKonuList(d){
     const kod=d.net<5?'bsl':d.net<=15?'ort':'ilr';
     const konular=dersKonular[d.name]?.[kod]||[];
-    const oncelik=konular.slice(0,2).join(' · ');
+    const baslangic=Math.floor(Math.random()*Math.max(1,konular.length-1));const oncelik=konular.slice(baslangic,baslangic+2).join(' · ');
     return `${d.name} (net ${d.net.toFixed(1)}) → Önce: ${oncelik||'Temel konular'}`;
   }
 
-  const urgentTopics = dersler.filter(d=>d.net< 5 ).map(sevKonuList);
-  const mediumTopics = dersler.filter(d=>d.net>=5&&d.net<=15).map(sevKonuList);
+  const alanDersler = OB.field==='sayisal'?['Matematik','Fizik','Kimya','Biyoloji','Türkçe']:OB.field==='sozel'?['Türkçe','Tarih','Coğrafya','Felsefe','Din Kültürü']:OB.field==='esit'?['Matematik','Türkçe','Tarih','Coğrafya','Felsefe']:null;
+const urgentTopics = dersler.filter(d=>d.net< 5 && (!alanDersler||alanDersler.includes(d.name))).map(sevKonuList);
+const mediumTopics = dersler.filter(d=>d.net>=5&&d.net<=15 && (!alanDersler||alanDersler.includes(d.name))).map(sevKonuList);
   const goodTopics   = dersler.filter(d=>d.net>15).map(d=>`${d.name} – Net: ${d.net.toFixed(1)} (Güçlü, koru)`);
 
   // ── 4. DERS BAZLI KAYNAK DB ──────────────────────────────
@@ -2997,7 +2998,7 @@ SON ${kalanGun2} GÜN - SERİ DENEME MODU:
     '- Net 5-10 ise: Orta seviyesin, gelisime acik de.\n' +
     '- Hedef meslek ile mevcut net uyumsuzsa donustce soyle.\n' +
     '- Ama her zaman cozum odakli bitir.\n\n' +
-    'TUTARLILIK: Zayif konular her zaman once, ayni net icin ayni kaynak seviyesi.\n\n' +
+    'TUTARLILIK: Zayif konular her zaman once, ayni net icin ayni kaynak seviyesi.\n\n' +'ÖNEMLI: Öğrencinin alanı ' + (OB.field||'tyt') + '. Haftalık planda SADECE bu alana uygun dersler olsun. Sayısal öğrenciye Tarih/Coğrafya/Felsefe/Edebiyat önerme. Sözel öğrenciye Fizik/Kimya/Biyoloji önerme.\n' +
     'ALAN BAZLI ODEV DAGILIMI:\n' + dagilim + '\n\n' +
     kpssKonular + yakinDeneme;
 }
