@@ -878,7 +878,11 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
   <div class="ob-ct"><span>🦉</span> Rotana Hazırım!</div>
   <div class="ob-cd">Verilerini işledim. Sana özel bir yol haritası hazır.</div>
   <div class="sum-box"><div class="sum-row" id="obSum"></div></div>
-  <div class="prof-badge"><div class="pb-label">✦ Mizaç Profilin</div><div class="pb-text" id="mizProfile"></div></div>
+  <div class="prof-badge"><div class="pb-label">✦ Mizaç Profilin</div><div class="pb-text" id="mizProfile"></div></div><label class="fl">Koçunu Seç</label>
+<div style="display:flex;gap:12px;margin-bottom:16px;">
+  <button type="button" onclick="selKarakter('erkek')" id="krkErkek" style="flex:1;padding:12px;border:2px solid var(--border);border-radius:12px;background:transparent;cursor:pointer;color:var(--text);font-size:0.85rem;">👦 Erkek Koç</button>
+  <button type="button" onclick="selKarakter('kiz')" id="krkKiz" style="flex:1;padding:12px;border:2px solid var(--border);border-radius:12px;background:transparent;cursor:pointer;color:var(--text);font-size:0.85rem;">👧 Kız Koç</button>
+</div>
   <button type="button" class="btn-gold" onclick="obFinish()">🚀 KoçAI'yı Başlat</button>
   <button type="button" class="btn-ghost" onclick="obGo(4)">← Geri</button>
 </div>
@@ -1837,7 +1841,11 @@ function renderSummary(){
   const q=QUOTES[new Date().getDate()%QUOTES.length];
   document.getElementById('obSum').insertAdjacentHTML('afterend',`<div style="margin-top:12px;font-family:'Lora',serif;font-size:0.88rem;font-style:italic;color:var(--muted2);line-height:1.6;">"${q.t}"<br><span style="font-size:0.72rem;font-style:normal;color:var(--gold3);">— ${q.w}</span></div>`);
 }
-
+function selKarakter(tip){
+  localStorage.setItem('kocai_karakter',tip);
+  document.getElementById('krkErkek').style.borderColor=tip==='erkek'?'var(--gold)':'var(--border)';
+  document.getElementById('krkKiz').style.borderColor=tip==='kiz'?'var(--gold)':'var(--border)';
+}
 function obFinish(){
   LS.set('k_profile',JSON.stringify(OB));
   document.getElementById('ob').style.display='none';
