@@ -1,18 +1,19 @@
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { WebView } from 'react-native-webview'
 
 export default function HomeScreen() {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <WebView
         source={{ uri: 'https://kocai-self.vercel.app' }}
         style={styles.webview}
       />
-    </View>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#000' },
   webview: { flex: 1 },
 })
