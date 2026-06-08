@@ -3045,11 +3045,12 @@ const JTPL = `{
 function getApiKey(){
   return localStorage.getItem('k_apikey')||'';
 }
-
+function analizHakkiKontrol(){const bugun=new Date().toDateString();const son=localStorage.getItem('kocai_son_analiz');if(son===bugun){alert('Bugünkü analiz hakkınızı kullandınız. Yarın tekrar gelin! 🌟');return false;}return true;}
 async function anPhotoFor(tip){
   const imgData = tip==='ayt' ? b64AYT : b64;
   if(!imgData) return;
-
+if(!analizHakkiKontrol()) return;
+  localStorage.setItem('kocai_son_analiz', new Date().toDateString());
   // MIME type otomatik tespit: PNG mi JPEG mi?
   const mimeType = imgData.startsWith('iVBOR') ? 'image/png'
                  : imgData.startsWith('/9j/') ? 'image/jpeg'
