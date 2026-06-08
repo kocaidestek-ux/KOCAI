@@ -615,16 +615,6 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
     .sp-ls-bot{display:block;font-family:Georgia,serif;font-size:0.8rem;font-weight:700;
       color:rgba(255,255,255,0.35);letter-spacing:0.08em;}
   </style>
-
-  <!-- Phase 1: Loop Studio tam ekran (z:10, beyaz bg) -->
-  <div id="ls-intro">
-    <div class="ls-logo-text">
-      <span class="ls-logo-top">loop</span>
-      <span class="ls-logo-bot">studio</span>
-    </div>
-    <div class="ls-presents">presents</div>
-  </div>
-
   <!-- Phase 2: Her zaman opacity:1 — mix-blend-mode çalışır -->
   <div id="sp-main">
     <div id="sp-glow"></div>
@@ -642,13 +632,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
       <div class="sp-dot"></div>
       <div class="sp-dot"></div>
     </div>
-    <div id="sp-ls">
-      <span class="sp-ls-top">loop</span>
-      <span class="sp-ls-bot">studio</span>
-    </div>
   </div>
-</div>
-  <div style="position:absolute;bottom:18px;"><img src="data:image/png;base64,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" style="width:80px;mix-blend-mode:screen;opacity:0.6;"/></div>
 </div>
 
 <div class="a1 amb"></div>
