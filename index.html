@@ -204,7 +204,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .pb-text{font-family:'Lora',serif;font-size:0.95rem;font-style:italic;line-height:1.7;color:var(--text);}
 
 /* ════════ NAV ════════ */
-.nav{position:sticky;top:0;z-index:500;background:rgba(8,8,10,0.92);backdrop-filter:blur(20px) saturate(1.4);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;height:64px;gap:0;width:100%;box-sizing:border-box;}
+.nav{position:sticky;top:0;padding-top:env(safe-area-inset-top);z-index:500;background:rgba(8,8,10,0.92);backdrop-filter:blur(20px) saturate(1.4);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;height:64px;gap:0;width:100%;box-sizing:border-box;}
 [data-theme="aydinlik"] .nav{background:rgba(245,245,240,0.95);}
 [data-theme="aydinlik"] .nav-name .k{color:#1a1a1a;}
 [data-theme="aydinlik"] .nav-tab{color:#555;}
