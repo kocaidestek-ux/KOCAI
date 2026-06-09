@@ -5,7 +5,15 @@ import { supabase } from '../constants/supabase'
 
 export default function RootLayout() {
   useEffect(() => {
+    const timeout = setTimeout(() => {
+      AsyncStorage.getItem('karakter').then(karakter => {
+        if (karakter) router.replace('/login')
+        else router.replace('/splash')
+      })
+    }, 3000)
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      clearTimeout(timeout)
       if (session) {
         router.replace('/home')
       } else {
@@ -17,9 +25,7 @@ export default function RootLayout() {
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        router.replace('/home')
-      }
+      if (session) router.replace('/home')
     })
     return () => listener.subscription.unsubscribe()
   }, [])
