@@ -2201,28 +2201,26 @@ async function readPhotoWithGemini(b64Data){
 {"Türkçe":{"dogru":0,"yanlis":0,"net":0},"Matematik":{"dogru":0,"yanlis":0,"net":0},"Fizik":{"dogru":0,"yanlis":0,"net":0},"Kimya":{"dogru":0,"yanlis":0,"net":0},"Biyoloji":{"dogru":0,"yanlis":0,"net":0},"Tarih":{"dogru":0,"yanlis":0,"net":0},"Coğrafya":{"dogru":0,"yanlis":0,"net":0},"Felsefe":{"dogru":0,"yanlis":0,"net":0},"Din Kültürü":{"dogru":0,"yanlis":0,"net":0}}
 Fotoğrafta olmayan derslerin değerleri 0 kalabilir. Net değerlerini küsuratlı ver (örn: 18.75).`;
 
-  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,{
+const res=await fetch('/api/chat',{
     method:'POST',
     headers:{
       'Content-Type':'application/json',
-      'x-api-key': getApiKey(),
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
+  },
     body:JSON.stringify({
-      contents:[{parts:[
-        {text:prompt},
-        {inline_data:{mime_type:'image/jpeg',data:b64Data}}
-      ]}],
-      generationConfig:{temperature:0.1,maxOutputTokens:512}
+      model:'claude-opus-4-6',
+      max_tokens:512,
+      messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64Data}},
+        {type:'text',text:prompt}
+      ]}]
     })
   });
 
-  if(!res.ok){const e=await res.json();throw new Error('Gemini: '+(e.error?.message||res.status));}
+  if(!res.ok){const e=await res.json();throw new Error('API: '+(e.error?.message||res.status));}
   const data=await res.json();
-  const txt=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+ 
   // JSON'u temizle ve parse et
-  const clean=txt.replace(/```json|```/g,'').trim();
+  const txt=data.content?.[0]?.text||'';
   const parsed=JSON.parse(clean);
 
   // Formunu doldur
