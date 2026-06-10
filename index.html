@@ -2736,7 +2736,8 @@ function hesapla(){
   const siralama = sirSim(toplamNet,sinav);
 
   // ── 7. HAFTALIK PLAN (sınav tipine göre saat aralıkları) ──
-  const zayif  = [...sorted].slice(0,3).map(d=>d.name);
+  const alanDersler = getSUBJS().map(s=>s.n);
+  const zayif = [...sorted].filter(d=>alanDersler.includes(d.name)).slice(0,3).map(d=>d.name); 
   const gunler = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 
   // Çalışma saatlerini belirle
