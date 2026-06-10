@@ -712,11 +712,6 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 <!-- STEP 1: Profile -->
 <div class="ob-card act" id="obs1">
   <div class="ob-ct"><span>🧑‍🎓</span> Merhaba, ben KoçAI!</div>
-  <label class="fl">Cinsiyet</label>
-<div class="hrs">
-  <button type="button" class="hr-pill" id="cinsErkek" onclick="selCins('erkek',this)">👦 Erkek</button>
-  <button type="button" class="hr-pill" id="cinsKiz" onclick="selCins('kiz',this)">👧 Kız</button>
-</div>
   <div class="ob-cd">Sana özel bir yol haritası çizebilmem için seni tanımam lazım. Başlayalım mı?</div>
   <label class="fl">Ad Soyad</label>
   <input class="ob-inp" id="obN" type="text" placeholder="Adın ve soyadın" oninput="chk1()"/>
@@ -1841,18 +1836,8 @@ function renderSummary(){
   const q=QUOTES[new Date().getDate()%QUOTES.length];
   document.getElementById('obSum').insertAdjacentHTML('afterend',`<div style="margin-top:12px;font-family:'Lora',serif;font-size:0.88rem;font-style:italic;color:var(--muted2);line-height:1.6;">"${q.t}"<br><span style="font-size:0.72rem;font-style:normal;color:var(--gold3);">— ${q.w}</span></div>`);
 }
-function selCins(val,btn){
-  ['cinsErkek','cinsKiz'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.classList.remove('act');
-  });
-  if(btn)btn.classList.add('act');
-}
+
 function obFinish(){
-  const cins = document.getElementById('cinsKiz')?.classList.contains('act') ? 'kiz' : 'erkek';
-  OB.cinsiyet = cins;
-  const spChar = document.getElementById('sp-char');
-  if(spChar) spChar.src = cins === 'kiz' ? 'karakter-kiz.png' : 'karakter-erkek.png';
   LS.set('k_profile',JSON.stringify(OB));
   document.getElementById('ob').style.display='none';
   document.getElementById('app').style.display='block';
@@ -2601,8 +2586,8 @@ function hesapla(){
     return `${d.name} (net ${d.net.toFixed(1)}) → Önce: ${oncelik||'Temel konular'}`;
   }
 
-  const urgentTopics = dersler.filter(d=>d.net< 5 && alanDersler.includes(d.name)).map(sevKonuList);
-  const mediumTopics = dersler.filter(d=>d.net>=5&&d.net<=15 && alanDersler.includes(d.name)).map(sevKonuList);
+  const urgentTopics = dersler.filter(d=>d.net< 5 ).map(sevKonuList);
+  const mediumTopics = dersler.filter(d=>d.net>=5&&d.net<=15).map(sevKonuList);
   const goodTopics   = dersler.filter(d=>d.net>15).map(d=>`${d.name} – Net: ${d.net.toFixed(1)} (Güçlü, koru)`);
 
   // ── 4. DERS BAZLI KAYNAK DB ──────────────────────────────
@@ -2751,8 +2736,7 @@ function hesapla(){
   const siralama = sirSim(toplamNet,sinav);
 
   // ── 7. HAFTALIK PLAN (sınav tipine göre saat aralıkları) ──
-  const alanDersler = getSUBJS().map(s=>s.n);
-  const zayif = [...sorted].filter(d=>alanDersler.includes(d.name)).slice(0,3).map(d=>d.name); 
+  const zayif  = [...sorted].slice(0,3).map(d=>d.name);
   const gunler = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 
   // Çalışma saatlerini belirle
@@ -2795,14 +2779,14 @@ function hesapla(){
     const s5=`${String(bH+3).padStart(2,'0')}:15`;
     const s6=`${String(bH+4).padStart(2,'0')}:15`;
     const sinavAd = sinav==='KPSS'?'GY/GK':sinav;
-    if(isSinavaYakin()) return{day:gun,saatlik:[
-   {saat:'09:00-12:15',ders:sinavAd,aktivite:`Tam ${sinavAd} denemesi 📝 sessiz ortamda`,tip:'soru'},
-   {saat:'13:00-14:30',ders:'Analiz',aktivite:'Hata analizi – yanlış soruları konulara göre listele',tip:'analiz'},
-   {saat:'14:30-15:30',ders:ana,aktivite:`${ana} ➜ ${anaK} hata analizi`,tip:'analiz'}
-   ],tasks:[
-   {subject:sinavAd,desc:'Tam deneme sınavı',amount:'135 soru'},
-   {subject:'Analiz',desc:'Hata analizi',amount:'45 dk'}
-   ]};
+    if(i===4 || isSinavaYakin()) return{day:gun,saatlik:[
+      {saat:'09:00-12:15',ders:sinavAd,aktivite:`Tam ${sinavAd} denemesi – sessiz ortamda`,tip:'soru'},
+      {saat:'13:00-14:30',ders:'Analiz',aktivite:'Hata analizi – yanlış soruları konulara göre listele',tip:'analiz'},
+      {saat:'14:30-15:30',ders:ana,aktivite:`${ana} – ${anaK} hata analizi`,tip:'analiz'}
+    ],tasks:[
+      {subject:sinavAd,desc:'Tam deneme sınavı',amount:'135 soru'},
+      {subject:'Analiz',desc:'Hata analizi',amount:'45 dk'}
+    ]};
     if(i===6) return{day:gun,saatlik:[
       {saat:`${s1}-${s2}`,ders:ana,aktivite:`${ana} – ${anaK} derinlemesine tekrar`,tip:'soru'},
       {saat:`${s3}-${s4}`,ders:destek,aktivite:`${destek} – ${destekK} konu tekrarı`,tip:'soru'},
@@ -3010,7 +2994,6 @@ SON ${kalanGun2} GÜN - SERİ DENEME MODU:
     '- Ama her zaman cozum odakli bitir.\n\n' +
     'TUTARLILIK: Zayif konular her zaman once, ayni net icin ayni kaynak seviyesi.\n\n' +
     'ALAN BAZLI ODEV DAGILIMI:\n' + dagilim + '\n\n' +
-    'KRITIK KURAL: urgentTopics, mediumTopics ve goodTopics dizilerinde SADECE su derslerden birini kullan: ' + getSUBJS().map(s=>s.n).join(', ') + '. Bu listede olmayan hicbir ders adi yazma.\n\n' +
     kpssKonular + yakinDeneme;
 }
 
