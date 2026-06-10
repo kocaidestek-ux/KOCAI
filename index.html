@@ -2245,27 +2245,15 @@ async function startAn(){
   animLoad();
   try{
     if(anMod==='yks'){
-      let tytOkundu=false, aytOkundu=false;
       let tytHata='', aytHata='';
       if(b64){
-        try{
-          await anPhotoFor('tyt');
-          tytOkundu=true;
-        }catch(e){
-          tytHata=e.message;
-          console.warn('TYT foto okunamadı:',e.message);
-        }
+        try{ await anPhotoFor('tyt'); }
+        catch(e){ tytHata=e.message; console.warn('TYT foto okunamadı:',e.message); }
       }
       if(b64AYT){
-        try{
-          await anPhotoFor('ayt');
-          aytOkundu=true;
-        }catch(e){
-          aytHata=e.message;
-          console.warn('AYT foto okunamadı:',e.message);
-        }
+        try{ await anPhotoFor('ayt'); }
+        catch(e){ aytHata=e.message; console.warn('AYT foto okunamadı:',e.message); }
       }
-      // Fotoğraf okundu ama net girilemedi → form aç
       const herhangiTYTNet=getSUBJS().some(s=>{
         const el=document.getElementById('ni-'+s.n);
         return el&&el.value&&parseFloat(el.value)!==0;
@@ -2299,7 +2287,8 @@ async function startAn(){
         return;
       }
     }
-    const r=hesapla();
+    // ── KRİTİK: hesapla() yerine hesaplaVeAI() — Anthropic API aktif ──
+    const r = await hesaplaVeAI();
     if(!r)return;
     S.plan=r.weekPlan;
     renderRes(r);
@@ -2923,56 +2912,58 @@ function buildSysPrompt(){
     ? '- Okul oncesi (' + OB.okulGiris + " dan once): 1-1.5 saat sabah calismasi\n- Okul (" + OB.okulGiris + '-' + OB.okulCikis + "): Calisma YOK\n- Okul sonrasi (" + OB.okulCikis + "'dan sonra): Kalan saatleri bol"
     : '- Sabahtan aksama bol, her 90 dakikada 15 dakika mola';
 
-  const kalanGun = sinavaKalanGun();
-  const yakinMod = kalanGun <= 30;
-  // yakinNot artik yakinDeneme olarak yukarida tanimlandi
+  const aktifAlan = (anMod === 'yks' && aytAlan) ? aytAlan : (OB.field || 'tyt');
 
-  // Alan bazlı ödev dağılımı
   const alanDagilim = {
-    'sayisal': 'SAYISAL (MF) DAĞILIM: Matematik %40, Fizik %20, Kimya %20, Biyoloji %10, Türkçe %10. Matematik en fazla soru. Geometri, Türev, İntegral öncelikli.',
-    'sozel': 'SÖZEL (TS) DAĞILIM: Türkçe %35, Tarih %25, Coğrafya %20, Felsefe %15, Matematik %5. Paragraf ve edebi türler öncelikli.',
-    'esit': 'EŞİT AĞIRLIK (EA) DAĞILIM: Türkçe %30, Matematik %30, Tarih %15, Coğrafya %15, Felsefe %10. İkisi dengeli tutulmalı.',
-    'dil': 'DİL DAĞILIM: İngilizce/Yabancı Dil %70, Türkçe %20, Matematik %10. Kelime, gramer, okuma öncelikli.',
-    'tyt': 'TYT DAĞILIM: Türkçe %30, Matematik %30, Fen %20, Sosyal %20. Dengeli.',
-    'lisans': 'KPSS LİSANS DAĞILIM: GK (Tarih, Coğrafya, Vatandaşlık, Güncel) %40, GY (Türkçe, Matematik, Geometri) %60. Mantık ve muhakeme kritik.',
-    'onlisans': 'KPSS ÖNLİSANS DAĞILIM: Türkçe %30, Matematik %30, Atatürk İlkeleri %20, Vatandaşlık %20.',
-    'lgs': 'LGS DAĞILIM: Matematik %30, Türkçe %30, Fen %20, İnkılap %10, İngilizce %10.',
+    'SAY':      'SAYISAL (MF) DAGILIM: Matematik %40, Fizik %20, Kimya %20, Biyoloji %10, Turkce %10. YASAK: Felsefe, Edebiyat, Tarih, Cografya icin urgentTopics veya kaynak ONERME.',
+    'EA':       'ESIT AGIRLIK (EA) DAGILIM: Turkce %30, Matematik %30, Tarih %15, Cografya %15, Felsefe %10. YASAK: Fizik, Kimya, Biyoloji icin urgentTopics veya kaynak ONERME.',
+    'SOZ':      'SOZEL (TS) DAGILIM: Turkce %35, Tarih %25, Cografya %20, Felsefe %15, Matematik %5. YASAK: Fizik, Kimya, Biyoloji icin urgentTopics veya kaynak ONERME.',
+    'sayisal':  'SAYISAL (MF) DAGILIM: Matematik %40, Fizik %20, Kimya %20, Biyoloji %10, Turkce %10. YASAK: Sozel bilim dersleri icin kaynak onerme.',
+    'sozel':    'SOZEL (TS) DAGILIM: Turkce %35, Tarih %25, Cografya %20, Felsefe %15, Matematik %5. YASAK: Fizik, Kimya, Biyoloji icin kaynak onerme.',
+    'esit':     'ESIT AGIRLIK (EA) DAGILIM: Turkce %30, Matematik %30, Tarih %15, Cografya %15, Felsefe %10. YASAK: Fizik, Kimya, Biyoloji icin kaynak onerme.',
+    'dil':      'DIL DAGILIM: Yabanci Dil %70, Turkce %20, Matematik %10. Kelime, gramer, okuma oncelikli.',
+    'tyt':      'TYT DAGILIM: Turkce %30, Matematik %30, Fen %20, Sosyal %20. Dengeli.',
+    'lisans':   'KPSS LISANS DAGILIM: GK (Tarih, Cografya, Vatandaslik) %40, GY (Turkce, Matematik) %60.',
+    'onlisans': 'KPSS ONLISANS DAGILIM: Turkce %30, Matematik %30, Ataturk Ilkeleri %20, Vatandaslik %20.',
+    'lgs':      'LGS DAGILIM: Matematik %30, Turkce %30, Fen %20, Inkılap %10, Ingilizce %10.',
   };
-  const dagilim = alanDagilim[OB.field] || alanDagilim['tyt'];
+  const dagilim = alanDagilim[aktifAlan] || alanDagilim['tyt'];
 
-  // KPSS konuları
   const kpssKonular = OB.exam === 'KPSS' ? `
-KPSS ÖZEL KONULAR:
-- Türkçe: Paragraf, Dil Bilgisi, Sözcük Türleri, Cümle Yapısı
-- Matematik: Temel işlemler, Oran-Orantı, Faiz, Yaş, Sayılar, Mantık
-- Tarih: Osmanlı, Cumhuriyet, Atatürk İlkeleri
-- Coğrafya: Türkiye Coğrafyası, Nüfus, Ekonomi
-- Vatandaşlık: Anayasa, Hukuk, Yönetim
-- Güncel Olaylar: Son 1 yılın önemli gelişmeleri` : '';
+KPSS OZEL KONULAR:
+- Turkce: Paragraf, Dil Bilgisi, Sozcuk Turleri, Cumle Yapisi
+- Matematik: Temel islemler, Oran-Orantı, Faiz, Yas, Sayilar, Mantik
+- Tarih: Osmanli, Cumhuriyet, Ataturk Ilkeleri
+- Cografya: Turkiye Cografyasi, Nufus, Ekonomi
+- Vatandaslik: Anayasa, Hukuk, Yonetim
+- Guncel Olaylar: Son 1 yilin onemli gelismeleri` : '';
 
-  // Sinava yakin deneme modu
   const kalanGun2 = sinavaKalanGun();
   const yakinDeneme = kalanGun2 <= 30 ? `
-SON ${kalanGun2} GÜN - SERİ DENEME MODU:
-- Günlük ${OB.hours} saat çalışmanın 5 saati DENEME (sabah TYT, öğleden sonra AYT/alan)
-- Kalan ${Math.max(0, parseInt(OB.hours||8) - 5)} saat: SADECE hata analizi ve eksik konu tekrarı
-- YENİ KONU ÇALIŞMA YOK — sadece deneme + analiz döngüsü
-- Her denemeden sonra yanlış soruları mutlaka çöz` : '';
+SON ${kalanGun2} GUN - SERI DENEME MODU:
+- Gunluk ${OB.hours} saat calismanin 5 saati DENEME (sabah TYT, ogleden sonra AYT/alan)
+- Kalan ${Math.max(0, parseInt(OB.hours||8) - 5)} saat: SADECE hata analizi ve eksik konu tekrari
+- YENI KONU CALISMA YOK - sadece deneme + analiz dongusu
+- Her denemeden sonra yanlis sorulari mutlaka coz` : '';
 
   return 'Sen KocAI sin - Turkiye nin en donust ve etkili yapay zeka sinav kocu.\n\n' +
     'OGRENCI PROFILI:\n' +
     '- Ad: ' + (OB.name||'Ogrenci') + '\n' +
     '- Sinif: ' + OB.cls + '\n' +
     '- Sinav: ' + OB.exam + '\n' +
+    '- Alan: ' + aktifAlan + '\n' +
     '- Hedef Meslek: ' + (OB.meslek||'Belirtilmedi') + '\n' +
     '- Hedef Universite: ' + (OB.univ||'Belirtilmedi') + '\n' +
     '- Gunluk Calisma: ' + OB.hours + ' saat\n' +
     '- ' + okulInfo + '\n\n' +
-    'KAYNAK SEVIYELENDIRME (ZORUNLU KURAL):\n' +
-    '- Net < 5: Baslangic: Antrenmanlarla Matematik, Aktif Yayinlari, Kafa Dengi\n' +
-    '- Net 5-15: Orta: Bilgi Sarmal, 345 Yayinlari, Esen Yayinlari, Limit Yayinlari\n' +
-    '- Net > 15: Ileri: Apotemi, Orijinal Yayinlari, Aydin Yayinlari, Karekok\n\n' +
-    'YOUTUBE HOCA ONERILERI (konuya gore 3-5 hoca oner):\n' +
+    'ALAN VE DERS DAGILIMI (KESİNLİKLE UY):\n' + dagilim + '\n\n' +
+    kpssKonular + '\n\n' +
+    yakinDeneme + '\n\n' +
+    'KAYNAK SEVIYELENDIRME:\n' +
+    '- Net < 5: Baslangic: Antrenmanlarla, Aktif Yayinlari, Kafa Dengi\n' +
+    '- Net 5-15: Orta: Bilgi Sarmal, 345, Esen, Limit\n' +
+    '- Net > 15: Ileri: Apotemi, Orijinal, Aydin, Karekok\n\n' +
+    'YOUTUBE HOCA ONERILERI:\n' +
     '- Matematik: Matematik Delisi, Ozel Ders TV, Matematigin Puf Noktalari, Birol Hoca, Kadir Hoca\n' +
     '- Turkce: Turkce Ogretmeni, Turkce Hocam, Ogretmen Akademisi, Dil ve Anlatim\n' +
     '- Fizik: Fizik Lab, Mehmet Hoca Fizik, Benim Hocam Fizik, Fizik Delisi\n' +
@@ -2987,10 +2978,8 @@ SON ${kalanGun2} GÜN - SERİ DENEME MODU:
     '- Hafta ici ve hafta sonu ayri plan yap\n\n' +
     'DONURLUK KURALLARI (COK ONEMLI):\n' +
     '- Poliyannaci OLMA. Net dusukse bunu acikca soyle.\n' +
-    '- "Harika gidiyorsun" deme, rakamlar ne diyorsa onu soyle.\n' +
-    '- Net < 5 ise: Bu konuda ciddi bir temel sorunu var de.\n' +
-    '- Net 5-10 ise: Orta seviyesin, gelisime acik de.\n' +
-    '- Hedef meslek ile mevcut net uyumsuzsa donustce soyle.\n' +
+    '- ASLA "Epistemoloji" veya herhangi sabit demo konu kullanma. SADECE ogrencinin gercek net verilerine dayan.\n' +
+    '- urgentTopics: SADECE bu ogrencinin EN DUSUK netli dersleri.\n' +
     '- Ama her zaman cozum odakli bitir.\n\n' +
     'TUTARLILIK: Zayif konular her zaman once, ayni net icin ayni kaynak seviyesi.\n\n' +
     'ALAN BAZLI ODEV DAGILIMI:\n' + dagilim + '\n\n' +
@@ -3121,7 +3110,130 @@ Ondalık kullan. Görselde olmayan/okunamayan dersler 0 kalır.`;
     // Not: tytDoldu kontrolü kaldırıldı — kısmi okuma da kabul edilir, kullanıcı eksikleri tamamlar
   }
 }
+// ═══════════════════════════════════════════════════════════
+//  hesaplaVeAI() — lokal hesap + Anthropic API analizi
+// ═══════════════════════════════════════════════════════════
+async function hesaplaVeAI(){
+  const lokal = hesapla();
+  if(!lokal) return null;
 
+  const tytNetStr = lokal.subjects
+    .filter(s => s.net !== 0)
+    .map(s => s.name + ':' + s.net)
+    .join(', ') || 'Tüm dersler sıfır';
+
+  let aytNetStr = '';
+  if(anMod === 'yks'){
+    const aytParcalar = (AYT_SUBJS[aytAlan]||[]).map(s => {
+      const el = document.getElementById('ayt-' + s.n);
+      const v = el ? (parseFloat(el.value) || 0) : 0;
+      return s.n + ':' + v;
+    });
+    aytNetStr = '\nAYT Netleri (' + aytAlan + ' Alanı): ' + aytParcalar.join(', ');
+  }
+
+  const alanAdiMap = {
+    SAY:'Sayısal (MF)', EA:'Eşit Ağırlık (EA)', SOZ:'Sözel (TS)',
+    sayisal:'Sayısal (MF)', sozel:'Sözel (TS)', esit:'Eşit Ağırlık (EA)',
+    dil:'Dil (YDİ)', tyt:'TYT', lisans:'KPSS Lisans', onlisans:'KPSS Önlisans', lgs:'LGS'
+  };
+  const aktifAlanKod = (anMod === 'yks' && aytAlan) ? aytAlan : (OB.field || 'tyt');
+  const aktifAlanAdi = alanAdiMap[aktifAlanKod] || aktifAlanKod;
+
+  const alanYasak = {
+    SAY: 'Felsefe, Edebiyat, Tarih, Coğrafya derslerini urgentTopics veya kaynaklar\'a EKLEME.',
+    EA:  'Fizik, Kimya, Biyoloji derslerini urgentTopics veya kaynaklar\'a EKLEME.',
+    SOZ: 'Fizik, Kimya, Biyoloji derslerini urgentTopics veya kaynaklar\'a EKLEME.',
+    sayisal: 'Felsefe, Edebiyat, Tarih, Coğrafya derslerini urgentTopics veya kaynaklar\'a EKLEME.',
+    sozel:   'Fizik, Kimya, Biyoloji derslerini urgentTopics veya kaynaklar\'a EKLEME.',
+    esit:    'Fizik, Kimya, Biyoloji derslerini urgentTopics veya kaynaklar\'a EKLEME.',
+  };
+  const yasakKural = alanYasak[aktifAlanKod] || '';
+
+  let siralamaOzet = 'Toplam net: ' + lokal.totalNet;
+  if(lokal._yksPuanKarti && lokal._yksPuanKarti.puanlar){
+    const p = lokal._yksPuanKarti.puanlar[aytAlan];
+    if(p) siralamaOzet += ' | YKS Puan (' + aytAlan + '): ' + p.yksPuan + ' | Sıralama: ' + p.siralama;
+  }
+
+  const userMsg =
+    '=== ÖĞRENCİ ANALİZ İSTEĞİ ===\n' +
+    'Ad: ' + (OB.name||'Öğrenci') + '\n' +
+    'Sınıf: ' + OB.cls + '\n' +
+    'Sınav: ' + (OB.exam||'TYT') + '\n' +
+    'Alan: ' + aktifAlanAdi + ' (' + aktifAlanKod + ')\n' +
+    'Hedef: ' + (OB.meslek||'Belirtilmedi') + ' @ ' + (OB.univ||'Belirtilmedi') + '\n' +
+    'Toplam Net: ' + lokal.totalNet + '\n' +
+    'TYT Netleri: ' + tytNetStr +
+    aytNetStr + '\n' +
+    siralamaOzet + '\n\n' +
+    'ALAN KURALI — KESİNLİKLE UYULMASI ZORUNLU:\n' +
+    aktifAlanAdi + ' öğrencisi için analiz yapıyorsun.\n' +
+    (yasakKural ? yasakKural + '\n' : '') +
+    'urgentTopics ve mediumTopics içine SADECE bu öğrencinin DÜŞÜK NET\'e sahip dersleri gir.\n' +
+    'ASLA "Felsefe - Epistemoloji" veya herhangi sabit demo konu kullanma. Yukarıdaki GERÇEK net değerlerine dayan.\n\n' +
+    'Aşağıdaki JSON formatında yanıt ver. BAŞKA HİÇBİR ŞEY YAZMA:\n' +
+    '{\n' +
+    '  "urgentTopics": ["DERS - Konu (Net X.X — neden acil)", "...", "..."],\n' +
+    '  "mediumTopics": ["DERS - Konu (Net X.X — açıklama)", "...", "..."],\n' +
+    '  "goodTopics": ["DERS - Güçlü Alan (Net X.X)", "..."],\n' +
+    '  "kaynaklar": [\n' +
+    '    {"ders": "Ders adı", "seviye": "Başlangıç|Orta|İleri", "kitaplar": ["kitap1"], "youtube": ["hoca1", "hoca2"], "neden": "Bu öğrencinin net değerine göre neden bu kaynaklar"}\n' +
+    '  ],\n' +
+    '  "coachNote": "' + (OB.name||'Öğrenci') + ' için kişisel, dürüst, cesaret verici 2-3 cümle. Gerçek net rakamlarını kullan."\n' +
+    '}';
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2500,
+        system: buildSysPrompt(),
+        messages: [{ role: 'user', content: userMsg }]
+      })
+    });
+
+    if(!res.ok){
+      let errMsg = 'HTTP ' + res.status;
+      try{ const e = await res.json(); errMsg += ': ' + (e?.error?.message || res.statusText); }catch(_){}
+      throw new Error(errMsg);
+    }
+
+    const d = await res.json();
+    if(d.error) throw new Error(d.error.message || 'Bilinmeyen API hatası');
+
+    const rawText = (d.content || [])
+      .map(c => c.text || '')
+      .join('')
+      .replace(/```json\s*/gi, '')
+      .replace(/```\s*/g, '')
+      .trim();
+
+    if(!rawText) throw new Error('API boş yanıt döndürdü');
+
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) throw new Error('API geçerli JSON döndürmedi. Ham: ' + rawText.substring(0, 200));
+
+    let aiData;
+    try{ aiData = JSON.parse(jsonMatch[0]); }
+    catch(parseErr){ throw new Error('JSON parse hatası: ' + parseErr.message); }
+
+    return {
+      ...lokal,
+      urgentTopics: (aiData.urgentTopics && aiData.urgentTopics.length > 0) ? aiData.urgentTopics : lokal.urgentTopics,
+      mediumTopics: (aiData.mediumTopics && aiData.mediumTopics.length > 0) ? aiData.mediumTopics : lokal.mediumTopics,
+      goodTopics:   (aiData.goodTopics   && aiData.goodTopics.length > 0)   ? aiData.goodTopics   : lokal.goodTopics,
+      kaynaklar:    (aiData.kaynaklar    && aiData.kaynaklar.length > 0)    ? aiData.kaynaklar    : lokal.kaynaklar,
+      coachNote:    (aiData.coachNote    && aiData.coachNote.trim().length > 10) ? aiData.coachNote : lokal.coachNote
+    };
+
+  } catch(apiErr) {
+    console.warn('[KoçAI] API analizi başarısız, lokal analiz kullanılıyor:', apiErr.message);
+    return lokal;
+  }
+}
 async function anPhoto(){
   // anPhotoFor('tyt') ile değiştirildi — bu fonksiyon artık kullanılmıyor
 }
