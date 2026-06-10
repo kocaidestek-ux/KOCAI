@@ -712,6 +712,11 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 <!-- STEP 1: Profile -->
 <div class="ob-card act" id="obs1">
   <div class="ob-ct"><span>🧑‍🎓</span> Merhaba, ben KoçAI!</div>
+  <label class="fl">Cinsiyet</label>
+<div class="hrs">
+  <button type="button" class="hr-pill" id="cinsErkek" onclick="selCins('erkek',this)">👦 Erkek</button>
+  <button type="button" class="hr-pill" id="cinsKiz" onclick="selCins('kiz',this)">👧 Kız</button>
+</div>
   <div class="ob-cd">Sana özel bir yol haritası çizebilmem için seni tanımam lazım. Başlayalım mı?</div>
   <label class="fl">Ad Soyad</label>
   <input class="ob-inp" id="obN" type="text" placeholder="Adın ve soyadın" oninput="chk1()"/>
@@ -1836,8 +1841,18 @@ function renderSummary(){
   const q=QUOTES[new Date().getDate()%QUOTES.length];
   document.getElementById('obSum').insertAdjacentHTML('afterend',`<div style="margin-top:12px;font-family:'Lora',serif;font-size:0.88rem;font-style:italic;color:var(--muted2);line-height:1.6;">"${q.t}"<br><span style="font-size:0.72rem;font-style:normal;color:var(--gold3);">— ${q.w}</span></div>`);
 }
-
+function selCins(val,btn){
+  ['cinsErkek','cinsKiz'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.classList.remove('act');
+  });
+  if(btn)btn.classList.add('act');
+}
 function obFinish(){
+  const cins = document.getElementById('cinsKiz')?.classList.contains('act') ? 'kiz' : 'erkek';
+  OB.cinsiyet = cins;
+  const spChar = document.getElementById('sp-char');
+  if(spChar) spChar.src = cins === 'kiz' ? 'karakter-kiz.png' : 'karakter-erkek.png';
   LS.set('k_profile',JSON.stringify(OB));
   document.getElementById('ob').style.display='none';
   document.getElementById('app').style.display='block';
