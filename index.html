@@ -2298,13 +2298,6 @@ async function startAn(){
         return;
       }
     } else if(b64){
-      if(!getApiKey()){
-        document.getElementById('loadArea').classList.remove('on');
-        document.getElementById('upForm').style.display='block';
-        if(!manOn)togMan();
-        alert('API anahtarı bulunamadı! Netlerini elle giriniz.');
-        return;
-      }
       try{ await anPhotoFor('tyt'); }
       catch(e){
         console.warn('Foto okunamadı:',e.message);
