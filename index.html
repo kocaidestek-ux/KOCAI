@@ -97,8 +97,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 @keyframes d2{to{transform:translate(80px,-60px);}}
 
 /* ════════ ONBOARDING ════════ */
-#ob{min-height:100vh;display:flex;flex-direction:column;align-items:center;position:relative;z-index:10;background:var(--bg);padding-bottom:80px;}
-
+#ob{min-height:100vh;display:flex;flex-direction:column;align-items:center;position:relative;z-index:10;background:var(--bg);padding-bottom:80px;padding-top:env(safe-area-inset-top);overflow-x:hidden;}
 /* Splash hero */
 .ob-hero{width:100%;text-align:center;padding:56px 24px 36px;border-bottom:1px solid var(--border);margin-bottom:32px;background:linear-gradient(180deg,rgba(245,200,66,0.04),transparent);}
 
