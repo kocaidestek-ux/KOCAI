@@ -2795,14 +2795,14 @@ function hesapla(){
     const s5=`${String(bH+3).padStart(2,'0')}:15`;
     const s6=`${String(bH+4).padStart(2,'0')}:15`;
     const sinavAd = sinav==='KPSS'?'GY/GK':sinav;
-    if(i===4) return{day:gun,saatlik:[
-      {saat:'09:00-12:15',ders:sinavAd,aktivite:`Tam ${sinavAd} denemesi – sessiz ortamda`,tip:'soru'},
-      {saat:'13:00-14:30',ders:'Analiz',aktivite:'Hata analizi – yanlış soruları konulara göre listele',tip:'analiz'},
-      {saat:'14:30-15:30',ders:ana,aktivite:`${ana} – ${anaK} hata analizi`,tip:'analiz'}
-    ],tasks:[
-      {subject:sinavAd,desc:'Tam deneme sınavı',amount:'135 soru'},
-      {subject:'Analiz',desc:'Hata analizi',amount:'45 dk'}
-    ]};
+    if(isSinavaYakin()) return{day:gun,saatlik:[
+   {saat:'09:00-12:15',ders:sinavAd,aktivite:`Tam ${sinavAd} denemesi 📝 sessiz ortamda`,tip:'soru'},
+   {saat:'13:00-14:30',ders:'Analiz',aktivite:'Hata analizi – yanlış soruları konulara göre listele',tip:'analiz'},
+   {saat:'14:30-15:30',ders:ana,aktivite:`${ana} ➜ ${anaK} hata analizi`,tip:'analiz'}
+   ],tasks:[
+   {subject:sinavAd,desc:'Tam deneme sınavı',amount:'135 soru'},
+   {subject:'Analiz',desc:'Hata analizi',amount:'45 dk'}
+   ]};
     if(i===6) return{day:gun,saatlik:[
       {saat:`${s1}-${s2}`,ders:ana,aktivite:`${ana} – ${anaK} derinlemesine tekrar`,tip:'soru'},
       {saat:`${s3}-${s4}`,ders:destek,aktivite:`${destek} – ${destekK} konu tekrarı`,tip:'soru'},
