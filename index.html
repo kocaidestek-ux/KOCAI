@@ -2247,15 +2247,6 @@ async function startAn(){
     if(anMod==='yks'){
       let tytOkundu=false, aytOkundu=false;
       let tytHata='', aytHata='';
-      // API key kontrolü
-      if(!getApiKey()){
-        document.getElementById('loadArea').classList.remove('on');
-        document.getElementById('upForm').style.display='block';
-        if(!manOn)togMan();
-        const aytSecEl=document.getElementById('aytSection');if(aytSecEl)aytSecEl.style.display='block';
-        alert('API anahtarı bulunamadı! Netlerini elle giriniz.');
-        return;
-      }
       if(b64){
         try{
           await anPhotoFor('tyt');
