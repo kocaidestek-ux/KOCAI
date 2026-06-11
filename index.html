@@ -763,7 +763,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
     <button type="button" class="exam-btn" onclick="selEx(this,'KPSS')" id="etKPSS"><span class="eb-name">KPSS</span><span class="eb-sub">Kamu</span></button>
   </div>
   <label class="fl">Hedef Alan</label>
-  <select class="ob-sel" id="obF">
+  <select class="ob-sel" id="obF" onchange="OB.field=this.value">
     <option value="">Seç...</option>
     <option value="sayisal">Sayısal (MF)</option>
     <option value="sozel">Sözel (TS)</option>
