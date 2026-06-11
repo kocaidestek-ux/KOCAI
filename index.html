@@ -2743,10 +2743,11 @@ function hesapla(){
     EA:      ['Fizik','Kimya','Biyoloji'],
     esit:    ['Fizik','Kimya','Biyoloji'],
   };
-  const aktifAlanKodHesap = (anMod==='yks'&&aytAlan) ? aytAlan : (OB.field||'tyt');
+  const aktifAlanKodHesap = anMod==='yks' ? (aytAlan||'SAY') : (OB.field||'tyt');
   const yasakListeHesap   = alanYasakDersler[aktifAlanKodHesap] || [];
   const filtreliSorted    = sorted.filter(d => !yasakListeHesap.includes(d.name));
-  const zayif  = (filtreliSorted.length >= 3 ? filtreliSorted : sorted).slice(0,3).map(d=>d.name);
+  const zayif  = filtreliSorted.length >= 2 ? filtreliSorted.slice(0,3) : sorted.slice(0,3);
+  const zayifNames = zayif.map(d=>d.name);
   const gunler = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 
   // Çalışma saatlerini belirle
@@ -2777,8 +2778,8 @@ function hesapla(){
   }
 
   const weekPlan = gunler.map((gun,i)=>{
-    const ana    = zayif[i%zayif.length];
-    const destek = zayif[(i+1)%zayif.length];
+    const ana    = zayifNames[i%zayifNames.length];
+    const destek = zayifNames[(i+1)%zayifNames.length];
     const anaK   = anaKonu(ana);
     const destekK= anaKonu(destek);
     const [bH,bM]=calisBaslangic.split(':').map(Number);
@@ -2925,6 +2926,99 @@ function isSinavaYakin() {
 
 function buildSysPrompt(){
   const hasOkul = ['8','9','10','11','12'].includes(OB.cls);
+  const okulInfo = hasOkul && OB.okulGiris && OB.okulCikis
+    ? 'Okul saatleri: ' + OB.okulGiris + ' - ' + OB.okulCikis + ' (bu saatler arasi calisma yapilamaz)'
+    : 'Okul saati yok, tum gun musait';
+
+  const saatPlan = hasOkul
+    ? '- Okul oncesi (' + OB.okulGiris + " dan once): 1-1.5 saat sabah calismasi\n- Okul (" + OB.okulGiris + '-' + OB.okulCikis + "): Calisma YOK\n- Okul sonrasi (" + OB.okulCikis + "'dan sonra): Kalan saatleri bol"
+    : '- Sabahtan aksama bol, her 90 dakikada 15 dakika mola';
+
+  const aktifAlan = anMod === 'yks' ? (aytAlan||'SAY') : (OB.field || 'tyt');
+
+  const alanDagilim = {
+    'SAY':      'SAYISAL (MF) DAGILIM: Matematik %40, Fizik %20, Kimya %20, Biyoloji %10, Turkce %10. YASAK DERSLER (hicbir sekilde programa ekleme): Felsefe, Edebiyat, Tarih, Cografya.',
+    'EA':       'ESIT AGIRLIK (EA) DAGILIM: Turkce %30, Matematik %30, Tarih %15, Cografya %15, Felsefe %10. YASAK DERSLER (hicbir sekilde programa ekleme): Fizik, Kimya, Biyoloji.',
+    'SOZ':      'SOZEL (TS) DAGILIM: Turkce %35, Tarih %25, Cografya %20, Felsefe %15, Matematik %5. YASAK DERSLER (hicbir sekilde programa ekleme): Fizik, Kimya, Biyoloji.',
+    'sayisal':  'SAYISAL (MF) DAGILIM: Matematik %40, Fizik %20, Kimya %20, Biyoloji %10, Turkce %10. YASAK DERSLER: Felsefe, Edebiyat, Tarih, Cografya.',
+    'sozel':    'SOZEL (TS) DAGILIM: Turkce %35, Tarih %25, Cografya %20, Felsefe %15, Matematik %5. YASAK DERSLER: Fizik, Kimya, Biyoloji.',
+    'esit':     'ESIT AGIRLIK (EA) DAGILIM: Turkce %30, Matematik %30, Tarih %15, Cografya %15, Felsefe %10. YASAK DERSLER: Fizik, Kimya, Biyoloji.',
+    'dil':      'DIL DAGILIM: Yabanci Dil %70, Turkce %20, Matematik %10. Kelime, gramer, okuma oncelikli.',
+    'tyt':      'TYT DAGILIM: Turkce %30, Matematik %30, Fen %20, Sosyal %20. Dengeli.',
+    'lisans':   'KPSS LISANS DAGILIM: GK (Tarih, Cografya, Vatandaslik) %40, GY (Turkce, Matematik) %60.',
+    'onlisans': 'KPSS ONLISANS DAGILIM: Turkce %30, Matematik %30, Ataturk Ilkeleri %20, Vatandaslik %20.',
+    'lgs':      'LGS DAGILIM: Matematik %30, Turkce %30, Fen %20, Inkılap %10, Ingilizce %10.',
+  };
+  const dagilim = alanDagilim[aktifAlan] || alanDagilim['tyt'];
+
+  const alanHaftaKurali = {
+    'SAY':     '7 GUNLUK ROTA KURALI — SAYISAL: Her gun sadece Matematik, Fizik, Kimya, Biyoloji, Turkce dersleri. Felsefe, Tarih, Cografya KESINLIKLE YOK.',
+    'sayisal': '7 GUNLUK ROTA KURALI — SAYISAL: Her gun sadece Matematik, Fizik, Kimya, Biyoloji, Turkce dersleri. Felsefe, Tarih, Cografya KESINLIKLE YOK.',
+    'EA':      '7 GUNLUK ROTA KURALI — ESIT AGIRLIK: Her gun sadece Turkce, Matematik, Tarih, Cografya, Felsefe dersleri. Fizik, Kimya, Biyoloji KESINLIKLE YOK.',
+    'esit':    '7 GUNLUK ROTA KURALI — ESIT AGIRLIK: Her gun sadece Turkce, Matematik, Tarih, Cografya, Felsefe dersleri. Fizik, Kimya, Biyoloji KESINLIKLE YOK.',
+    'SOZ':     '7 GUNLUK ROTA KURALI — SOZEL: Her gun sadece Turkce, Tarih, Cografya, Felsefe, Matematik dersleri. Fizik, Kimya, Biyoloji KESINLIKLE YOK.',
+    'sozel':   '7 GUNLUK ROTA KURALI — SOZEL: Her gun sadece Turkce, Tarih, Cografya, Felsefe, Matematik dersleri. Fizik, Kimya, Biyoloji KESINLIKLE YOK.',
+  };
+  const haftaKurali = alanHaftaKurali[aktifAlan] || '';
+
+  const kpssKonular = OB.exam === 'KPSS' ? `
+KPSS OZEL KONULAR:
+- Turkce: Paragraf, Dil Bilgisi, Sozcuk Turleri, Cumle Yapisi
+- Matematik: Temel islemler, Oran-Orantı, Faiz, Yas, Sayilar, Mantik
+- Tarih: Osmanli, Cumhuriyet, Ataturk Ilkeleri
+- Cografya: Turkiye Cografyasi, Nufus, Ekonomi
+- Vatandaslik: Anayasa, Hukuk, Yonetim
+- Guncel Olaylar: Son 1 yilin onemli gelismeleri` : '';
+
+  const kalanGun2 = sinavaKalanGun();
+  const yakinDeneme = kalanGun2 <= 30 ? `
+SON ${kalanGun2} GUN - SERI DENEME MODU:
+- Gunluk ${OB.hours} saat calismanin 5 saati DENEME (sabah TYT, ogleden sonra AYT/alan)
+- Kalan ${Math.max(0, parseInt(OB.hours||8) - 5)} saat: SADECE hata analizi ve eksik konu tekrari
+- YENI KONU CALISMA YOK - sadece deneme + analiz dongusu
+- Her denemeden sonra yanlis sorulari mutlaka coz` : '';
+
+  return 'Sen KocAI sin - Turkiye nin en donust ve etkili yapay zeka sinav kocu.\n\n' +
+    'OGRENCI PROFILI:\n' +
+    '- Ad: ' + (OB.name||'Ogrenci') + '\n' +
+    '- Sinif: ' + OB.cls + '\n' +
+    '- Sinav: ' + OB.exam + '\n' +
+    '- Alan: ' + aktifAlan + '\n' +
+    '- Hedef Meslek: ' + (OB.meslek||'Belirtilmedi') + '\n' +
+    '- Hedef Universite: ' + (OB.univ||'Belirtilmedi') + '\n' +
+    '- Gunluk Calisma: ' + OB.hours + ' saat\n' +
+    '- ' + okulInfo + '\n\n' +
+    'ALAN VE DERS DAGILIMI (KESINLIKLE UY):\n' + dagilim + '\n\n' +
+    haftaKurali + '\n\n' +
+    kpssKonular + '\n\n' +
+    yakinDeneme + '\n\n' +
+    'KAYNAK SEVIYELENDIRME:\n' +
+    '- Net < 5: Baslangic: Antrenmanlarla, Aktif Yayinlari, Kafa Dengi\n' +
+    '- Net 5-15: Orta: Bilgi Sarmal, 345, Esen, Limit\n' +
+    '- Net > 15: Ileri: Apotemi, Orijinal, Aydin, Karekok\n\n' +
+    'YOUTUBE HOCA ONERILERI:\n' +
+    '- Matematik: Matematik Delisi, Ozel Ders TV, Matematigin Puf Noktalari, Birol Hoca, Kadir Hoca\n' +
+    '- Turkce: Turkce Ogretmeni, Turkce Hocam, Ogretmen Akademisi, Dil ve Anlatim\n' +
+    '- Fizik: Fizik Lab, Mehmet Hoca Fizik, Benim Hocam Fizik, Fizik Delisi\n' +
+    '- Kimya: Serdar Hoca, Kimya Kupu, Kimya Hocam, Benim Hocam Kimya\n' +
+    '- Biyoloji: Biyoloji Kafasi, Ogretmen Akademisi, Benim Hocam Biyoloji\n' +
+    '- Tarih: Tarih Kafasi, Benim Hocam Tarih\n' +
+    '- Cografya: Cografya Hocam, Benim Hocam Cografya\n' +
+    '- Felsefe: Felsefe Hocam, Benim Hocam Felsefe\n\n' +
+    'SAAT BAZLI PLAN:\n' + saatPlan + '\n' +
+    '- Her konuyu: 1) YouTube konu anlatimi 2) Soru cozumu 3) Hata analizi seklinde planla\n' +
+    '- Zayif konulara daha fazla saat ver, guclu konulara kisa tekrar\n' +
+    '- Hafta ici ve hafta sonu ayri plan yap\n\n' +
+    'DONURLUK KURALLARI (COK ONEMLI):\n' +
+    '- Poliyannaci OLMA. Net dusukse bunu acikca soyle.\n' +
+    '- ASLA sabit demo konu kullanma. SADECE ogrencinin gercek net verilerine dayan.\n' +
+    '- urgentTopics: SADECE bu ogrencinin EN DUSUK netli dersleri.\n' +
+    '- Ama her zaman cozum odakli bitir.\n\n' +
+    'TUTARLILIK: Zayif konular her zaman once, ayni net icin ayni kaynak seviyesi.\n\n' +
+    'ALAN BAZLI ODEV DAGILIMI (TEKRAR HATIRLATMA):\n' + dagilim + '\n' +
+    haftaKurali + '\n\n' +
+    kpssKonular + yakinDeneme;
+}
   const okulInfo = hasOkul && OB.okulGiris && OB.okulCikis
     ? 'Okul saatleri: ' + OB.okulGiris + ' - ' + OB.okulCikis + ' (bu saatler arasi calisma yapilamaz)'
     : 'Okul saati yok, tum gun musait';
