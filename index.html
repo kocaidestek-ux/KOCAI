@@ -768,7 +768,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
     <button type="button" class="exam-btn" onclick="selEx(this,'KPSS')" id="etKPSS"><span class="eb-name">KPSS</span><span class="eb-sub">Kamu</span></button>
   </div>
   <label class="fl">Hedef Alan</label>
-  <select class="ob-sel" id="obF">
+  <select class="ob-sel" id="obF" onchange="OB.field=this.value">
     <option value="">Seç...</option>
     <option value="sayisal">Sayısal (MF)</option>
     <option value="sozel">Sözel (TS)</option>
@@ -1685,11 +1685,10 @@ function selH(el,val){
 
 function selEx(el,val){
   document.querySelectorAll('.exam-btn').forEach(b=>b.classList.remove('sel'));
-  el.classList.add('sel'); OB.exam=val;
-  // Sınav değişince ders gridini yeniden oluştur
+  el.classList.add('sel');
+  OB.exam=val;
   const g=document.getElementById('sGrid');if(g)g.innerHTML='';
   if(manOn)buildSubjGrid();
-  // Step 3'ü sınava göre hazırla
   showHedefSection();
 }
 
@@ -1708,7 +1707,8 @@ function obGo(step){
   OB.cls   = document.getElementById('obC')?.value||OB.cls;
   OB.okulGiris = document.getElementById('okulGiris')?.value||OB.okulGiris;
   OB.okulCikis = document.getElementById('okulCikis')?.value||OB.okulCikis;
-  OB.field = document.getElementById('obF')?.value||OB.field;
+  const obFVal = document.getElementById('obF')?.value;
+  if(obFVal) OB.field = obFVal;
   OB.meslek= document.getElementById('obM')?.value.trim()||OB.meslek;
   OB.univ  = document.getElementById('obU')?.value.trim()||OB.univ;
 
@@ -1848,6 +1848,10 @@ function renderSummary(){
 }
 
 function obFinish(){
+  OB.field = document.getElementById('obF')?.value || OB.field;
+  OB.name  = document.getElementById('obN')?.value.trim() || OB.name;
+  OB.cls   = document.getElementById('obC')?.value || OB.cls;
+  console.log('[KoçAI] obFinish OB.field:', OB.field, '| OB.exam:', OB.exam);
   LS.set('k_profile',JSON.stringify(OB));
   document.getElementById('ob').style.display='none';
   document.getElementById('app').style.display='block';
