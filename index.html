@@ -307,9 +307,9 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
 .stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 18px;position:relative;overflow:hidden;transition:border-color 0.3s;}
 .stat:hover{border-color:var(--border2);}
-.stat::after{content:attr(data-g);position:absolute;right:10px;bottom:6px;font-size:2.4rem;opacity:0.05;pointer-events:none;}
-.stat-v{font-family:'Lora',serif;font-size:2.4rem;font-weight:700;line-height:1;margin-bottom:5px;}
-.stat-l{font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.stat::after{content:attr(data-g);position:absolute;right:10px;bottom:6px;font-size:2.4rem;opacity:0.04;pointer-events:none;z-index:0;user-select:none;}
+.stat-v{font-family:'Lora',serif;font-size:2.4rem;font-weight:700;line-height:1;margin-bottom:5px;position:relative;z-index:1;}
+.stat-l{font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);position:relative;z-index:1;}
 
 /* Today tasks */
 .sec-row{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;}
@@ -740,6 +740,11 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
         <input type="time" class="ob-inp" id="okulCikis" value="15:30" style="margin-bottom:0;"/>
       </div>
     </div>
+  </div>
+  <label class="fl">Cinsiyet</label>
+  <div class="hrs">
+    <button type="button" class="hr-pill" id="gKiz" onclick="selGender(this,'kiz')">👧 Kız</button>
+    <button type="button" class="hr-pill" id="gErkek" onclick="selGender(this,'erkek')">👦 Erkek</button>
   </div>
   <label class="fl">Günlük Çalışma Süresi</label>
   <div class="hrs">
@@ -1579,7 +1584,12 @@ const S = {
   cfg:safeJSON(LS.get('k_cfg')||'{"notif":false,"weekly":true,"streak":true,"time":"18:00"}',{}),
 };
 
-const OB = {name:'',cls:'',hours:'',exam:'',field:'',meslek:'',univ:'',miz:[],okulGiris:'',okulCikis:'',kpssAlan:'',kpssKadro:'',calisiyor:'hayir',isGiris:'',isCikis:'',liseTuru:''};
+const OB = {name:'',cls:'',hours:'',exam:'',field:'',meslek:'',univ:'',miz:[],okulGiris:'',okulCikis:'',kpssAlan:'',kpssKadro:'',calisiyor:'hayir',isGiris:'',isCikis:'',liseTuru:'',gender:'erkek'};
+function selGender(el,val){
+  OB.gender=val;
+  ['gKiz','gErkek'].forEach(id=>document.getElementById(id)?.classList.remove('sel'));
+  el.classList.add('sel');
+}
 
 function setCalisma(val){
   OB.calisiyor=val;
@@ -2725,7 +2735,18 @@ function hesapla(){
   const siralama = sirSim(toplamNet,sinav);
 
   // ── 7. HAFTALIK PLAN (sınav tipine göre saat aralıkları) ──
-  const zayif  = [...sorted].slice(0,3).map(d=>d.name);
+  const alanYasakDersler = {
+    SAY:     ['Felsefe','Tarih','Coğrafya','Din Kültürü'],
+    sayisal: ['Felsefe','Tarih','Coğrafya','Din Kültürü'],
+    SOZ:     ['Fizik','Kimya','Biyoloji'],
+    sozel:   ['Fizik','Kimya','Biyoloji'],
+    EA:      ['Fizik','Kimya','Biyoloji'],
+    esit:    ['Fizik','Kimya','Biyoloji'],
+  };
+  const aktifAlanKodHesap = (anMod==='yks'&&aytAlan) ? aytAlan : (OB.field||'tyt');
+  const yasakListeHesap   = alanYasakDersler[aktifAlanKodHesap] || [];
+  const filtreliSorted    = sorted.filter(d => !yasakListeHesap.includes(d.name));
+  const zayif  = (filtreliSorted.length >= 3 ? filtreliSorted : sorted).slice(0,3).map(d=>d.name);
   const gunler = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 
   // Çalışma saatlerini belirle
@@ -3220,10 +3241,26 @@ async function hesaplaVeAI(){
     try{ aiData = JSON.parse(jsonMatch[0]); }
     catch(parseErr){ throw new Error('JSON parse hatası: ' + parseErr.message); }
 
+    const alanYasakAI = {
+      SAY:     ['Felsefe','Tarih','Coğrafya','Din Kültürü'],
+      sayisal: ['Felsefe','Tarih','Coğrafya','Din Kültürü'],
+      SOZ:     ['Fizik','Kimya','Biyoloji'],
+      sozel:   ['Fizik','Kimya','Biyoloji'],
+      EA:      ['Fizik','Kimya','Biyoloji'],
+      esit:    ['Fizik','Kimya','Biyoloji'],
+    };
+    const aktifKodAI    = (anMod==='yks'&&aytAlan) ? aytAlan : (OB.field||'tyt');
+    const yasakAI       = alanYasakAI[aktifKodAI] || [];
+    function filtreleTopics(arr){
+      if(!arr||!arr.length) return arr;
+      return arr.filter(t => !yasakAI.some(y => t.includes(y)));
+    }
+    const filtUrgent = filtreleTopics(aiData.urgentTopics);
+    const filtMedium = filtreleTopics(aiData.mediumTopics);
     return {
       ...lokal,
-      urgentTopics: (aiData.urgentTopics && aiData.urgentTopics.length > 0) ? aiData.urgentTopics : lokal.urgentTopics,
-      mediumTopics: (aiData.mediumTopics && aiData.mediumTopics.length > 0) ? aiData.mediumTopics : lokal.mediumTopics,
+      urgentTopics: (filtUrgent && filtUrgent.length > 0) ? filtUrgent : lokal.urgentTopics,
+      mediumTopics: (filtMedium && filtMedium.length > 0) ? filtMedium : lokal.mediumTopics,
       goodTopics:   (aiData.goodTopics   && aiData.goodTopics.length > 0)   ? aiData.goodTopics   : lokal.goodTopics,
       kaynaklar:    (aiData.kaynaklar    && aiData.kaynaklar.length > 0)    ? aiData.kaynaklar    : lokal.kaynaklar,
       coachNote:    (aiData.coachNote    && aiData.coachNote.trim().length > 10) ? aiData.coachNote : lokal.coachNote
@@ -3376,6 +3413,39 @@ function renderRes(data){
   document.getElementById('loadArea').classList.remove('on');
   document.getElementById('resArea').classList.add('on');
   saveToHistory(data);
+
+  // ── Seri Deneme Uyarı Bandı ──
+  const _oldUyari = document.getElementById('_seriDenemeUyari');
+  if(_oldUyari) _oldUyari.remove();
+  const kalanGunRender = sinavaKalanGun();
+  const resAreaEl = document.getElementById('resArea');
+  if(kalanGunRender > 0 && kalanGunRender <= 30){
+    const uyariBand = document.createElement('div');
+    uyariBand.id = '_seriDenemeUyari';
+    uyariBand.innerHTML = `
+      <div style="background:linear-gradient(135deg,rgba(184,74,74,0.18),rgba(192,144,48,0.12));border:1px solid rgba(184,74,74,0.5);border-radius:16px;padding:18px 22px;margin-bottom:16px;display:flex;align-items:center;gap:14px;">
+        <span style="font-size:2rem;flex-shrink:0;">🚨</span>
+        <div style="flex:1;">
+          <div style="font-family:'Lora',serif;font-size:1rem;font-weight:700;color:#f08080;margin-bottom:4px;">
+            ${OB.name||'Öğrenci'}, sınava <span style="font-size:1.2rem;color:#ffaaaa;">${kalanGunRender}</span> gün kaldı!
+          </div>
+          <div style="font-size:0.82rem;color:var(--muted2);line-height:1.6;">
+            KoçAI Tavsiyesi: Bugünden itibaren <strong style="color:#ffaaaa;">HER GÜN SERİ DENEME</strong> moduna geçmelisin!
+          </div>
+        </div>
+      </div>`;
+    resAreaEl.insertBefore(uyariBand, resAreaEl.firstChild);
+  }
+
+  // ── Cinsiyet Avatarı ──
+  const _oldAvatar = document.getElementById('_cinsiyetAvatar');
+  if(_oldAvatar) _oldAvatar.remove();
+  const avatarSrc = (OB.gender === 'kiz') ? '/karakter-kiz.png' : '/karakter-erkek.png';
+  const avatarDiv = document.createElement('div');
+  avatarDiv.id = '_cinsiyetAvatar';
+  avatarDiv.style.cssText = 'text-align:center;margin-bottom:16px;';
+  avatarDiv.innerHTML = `<img src="${avatarSrc}" alt="Karakter" style="height:120px;object-fit:contain;filter:drop-shadow(0 4px 24px rgba(245,200,66,0.18));" onerror="this.style.display='none'"/>`;
+  resAreaEl.insertBefore(avatarDiv, resAreaEl.firstChild);
 
   // Eski kartları temizle
   const old=document.getElementById('_kocaiHeader');if(old)old.remove();
