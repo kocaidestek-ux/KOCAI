@@ -2588,8 +2588,8 @@ function hesapla(){
   }
 
   const urgentTopics = dersler.filter(d=>d.net< 5 ).map(sevKonuList);
-  const mediumTopics = dersler.filter(d=>d.net>=5&&d.net<=15).map(sevKonuList);
-  const goodTopics   = dersler.filter(d=>d.net>15).map(d=>`${d.name} – Net: ${d.net.toFixed(1)} (Güçlü, koru)`);
+  const mediumTopics = dersler.filter(d=>d.net>=5&&d.net<=10).map(sevKonuList);
+  const goodTopics   = dersler.filter(d=>d.net>10).map(d=>`${d.name} – Net: ${d.net.toFixed(1)} (Güçlü, koru)`);
 
   // ── 4. DERS BAZLI KAYNAK DB ──────────────────────────────
   const kaynakDB = {
