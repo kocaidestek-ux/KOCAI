@@ -1839,6 +1839,14 @@ function renderSummary(){
 
 function obFinish(){
   LS.set('k_profile',JSON.stringify(OB));
+  // Meslek→AYT alan otomatik eşleştirme
+  const ml=(OB.meslek||'').toLowerCase();
+  if(ml.includes('avuk')||ml.includes('hukuk')||ml.includes('savcı')||ml.includes('hakim')||ml.includes('noter')||ml.includes('arabulucu')||ml.includes('sosyal hizmet')||ml.includes('psiko')||ml.includes('gazeteci')||ml.includes('iletişim')||ml.includes('öğret')||ml.includes('pedago')||ml.includes('rehber')){
+    setAytAlan('EA');
+  } else if(ml.includes('tarih')||ml.includes('edeb')||ml.includes('felse')||ml.includes('dil ')||ml.includes('çevirmen')||ml.includes('arkeolog')){
+    setAytAlan('SOZ');
+  }
+  // Mühendis/sağlık SAY zaten varsayılan — dokunma
   document.getElementById('ob').style.display='none';
   document.getElementById('app').style.display='block';
   initApp();
