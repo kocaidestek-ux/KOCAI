@@ -2783,7 +2783,7 @@ function hesapla(){
   }
 
   function anaKonu(dersAdi){
-    const d=dersler.find(x=>x.name===dersAdi);
+    const d=alanDersler.find(x=>x.name===dersAdi);
     if(!d)return dersAdi+' çalış';
     const kod=sevKod(d.net);
     const k=(dersKonular[dersAdi]?.[kod]||[])[0]||dersAdi;
