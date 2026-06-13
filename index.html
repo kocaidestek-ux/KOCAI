@@ -2605,9 +2605,14 @@ function hesapla(){
     return `${d.name} (net ${d.net.toFixed(1)}) → Önce: ${oncelik||'Temel konular'}`;
   }
 
-  const urgentTopics = dersler.filter(d=>d.net< 5 ).map(sevKonuList);
-  const mediumTopics = dersler.filter(d=>d.net>=5&&d.net<=10).map(sevKonuList);
-  const goodTopics   = dersler.filter(d=>d.net>10).map(d=>`${d.name} – Net: ${d.net.toFixed(1)} (Güçlü, koru)`);
+  // YKS modunda sadece ilgili alanın dersleri analiz edilir
+  const alanDersler = anMod==='yks'
+    ? dersler.filter(d=>(AYT_SUBJS[aytAlan]||[]).some(s=>s.n===d.name)||['Türkçe','Matematik','Fen Bilimleri','Sosyal Bilimler'].includes(d.name))
+    : dersler;
+  const sortedAlan  = [...alanDersler].sort((a,b)=>a.net-b.net);
+  const urgentTopics = alanDersler.filter(d=>d.net< 5 ).map(sevKonuList);
+  const mediumTopics = alanDersler.filter(d=>d.net>=5&&d.net<=10).map(sevKonuList);
+  const goodTopics   = alanDersler.filter(d=>d.net>10).map(d=>`${d.name} – Net: ${d.net.toFixed(1)} (Güçlü, koru)`);
 
   // ── 4. DERS BAZLI KAYNAK DB ──────────────────────────────
   const kaynakDB = {
@@ -2661,7 +2666,7 @@ function hesapla(){
   function sevKod(net){return net<5?'bsl':net<=15?'ort':'ilr';}
   const sevLabel={bsl:'Başlangıç',ort:'Orta',ilr:'İleri'};
 
-  const kaynaklar = dersler.map(d=>{
+  const kaynaklar = alanDersler.map(d=>{
     const kod = sevKod(d.net);
     const db  = kaynakDB[d.name]?.[kod]||{kitaplar:['Ders kitabı'],youtube:['Öğretmen Akademisi'],neden:'Temel konuları çalış.'};
     const oncelikliKonular = (dersKonular[d.name]?.[kod]||[]).slice(0,2).join(', ');
@@ -2755,7 +2760,7 @@ function hesapla(){
   const siralama = sirSim(toplamNet,sinav);
 
   // ── 7. HAFTALIK PLAN (sınav tipine göre saat aralıkları) ──
-  const zayif  = [...sorted].slice(0,3).map(d=>d.name);
+  const zayif  = [...sortedAlan].slice(0,3).map(d=>d.name);
   const gunler = ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi','Pazar'];
 
   // Çalışma saatlerini belirle
