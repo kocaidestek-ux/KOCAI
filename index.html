@@ -2605,10 +2605,29 @@ function hesapla(){
     return `${d.name} (net ${d.net.toFixed(1)}) → Önce: ${oncelik||'Temel konular'}`;
   }
 
-  // YKS modunda sadece ilgili alanın dersleri analiz edilir
-  const alanDersler = anMod==='yks'
-    ? dersler.filter(d=>(AYT_SUBJS[aytAlan]||[]).some(s=>s.n===d.name))
-    : dersler;
+  // YKS modunda: AYT alan dersleri + TYT'den alan dışı olmayanlar merge edilir
+  let alanDersler = dersler;
+  if(anMod==='yks'){
+    const aytAlanIsimleri = (AYT_SUBJS[aytAlan]||[]).map(s=>s.n);
+    // TYT dışı dersler: Fizik, Kimya, Biyoloji, Tarih, Coğrafya, Felsefe, Din Kültürü
+    const tytOzel = ['Fizik','Kimya','Biyoloji','Tarih','Coğrafya','Felsefe','Din Kültürü'];
+    // TYT'den sadece alan için gerekli olanları al
+    const tytFiltre = dersler.filter(d=>!tytOzel.includes(d.name)||aytAlanIsimleri.includes(d.name));
+    // AYT netlerini oku ve merge et
+    const aytNetler = {};
+    (AYT_SUBJS[aytAlan]||[]).forEach(s=>{
+      const el=document.getElementById('ayt-'+s.n);
+      if(el&&el.value.trim()!=='') aytNetler[s.n]=parseFloat(el.value)||0;
+    });
+    // Merge: AYT neti varsa AYT'yi kullan, yoksa TYT'yi bırak
+    alanDersler = tytFiltre.map(d=>aytNetler[d.name]!==undefined?{name:d.name,net:aytNetler[d.name]}:d);
+    // AYT'de olup TYT'de olmayan dersleri ekle (Tarih, Coğrafya gibi)
+    (AYT_SUBJS[aytAlan]||[]).forEach(s=>{
+      if(!alanDersler.find(d=>d.name===s.n)&&aytNetler[s.n]!==undefined){
+        alanDersler.push({name:s.n,net:aytNetler[s.n]});
+      }
+    });
+  }
   const sortedAlan  = [...alanDersler].sort((a,b)=>a.net-b.net);
   const urgentTopics = alanDersler.filter(d=>d.net< 5 ).map(sevKonuList);
   const mediumTopics = alanDersler.filter(d=>d.net>=5&&d.net<=10).map(sevKonuList);
