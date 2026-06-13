@@ -2510,7 +2510,17 @@ function hesapla(){
       dersler.push({name:s.n, net:parseFloat(net.toFixed(2))});
     }
   });
-
+// YKS modunda: AYT derslerini de analize dahil et
+  if(anMod==='yks'){
+    (AYT_SUBJS[aytAlan]||[]).forEach(s=>{
+      const el=document.getElementById('ayt-'+s.n);
+      const val=el?el.value.trim():'';
+      if(val!==''&&!dersler.find(d=>d.name===s.n)){
+        const net=parseFloat(val)||0;
+        dersler.push({name:s.n, net:parseFloat(net.toFixed(2))});
+      }
+    });
+  }
   // YKS modunda: TYT neti yoksa bile AYT neti yeterli (fotoğraf çekildi ama TYT boş bırakıldı)
   if(dersler.length===0 && anMod==='yks'){
     const aytBosMu=(AYT_SUBJS[aytAlan]||[]).every(s=>{
