@@ -714,7 +714,12 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
   <div class="ob-cd">Sana özel bir yol haritası çizebilmem için seni tanımam lazım. Başlayalım mı?</div>
   <label class="fl">Ad Soyad</label>
   <input class="ob-inp" id="obN" type="text" placeholder="Adın ve soyadın" oninput="chk1()"/>
-  <label class="fl">Sınıf / Durum</label>
+  <label class="fl">Cinsiyet</label>
+<div style="display:flex;gap:12px;margin-bottom:16px;">
+  <button type="button" id="cinsErkek" class="ob-inp" style="flex:1;padding:10px;background:var(--gold);" onclick="OB.cinsiyet='erkek';this.style.background='var(--gold)';document.getElementById('cinsKiz').style.background=''">👦 Erkek</button>
+  <button type="button" id="cinsKiz" class="ob-inp" style="flex:1;padding:10px;" onclick="OB.cinsiyet='kiz';this.style.background='var(--gold)';document.getElementById('cinsErkek').style.background=''">👧 Kız</button>
+</div>
+<label class="fl">Sınıf / Durum</label>
   <select class="ob-sel" id="obC" onchange="chk1();toggleOkul()">
     <option value="">Seç...</option>
     <option value="9">9. Sınıf</option>
