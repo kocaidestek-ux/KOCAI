@@ -2352,6 +2352,8 @@ let aytAlan='SAY';
 
 function initAnalizPage(){
   const exam=OB.exam||'TYT';
+  const savedAlan = LS.get('k_aytAlan');
+  if(savedAlan) setAytAlan(savedAlan);
   const modeSec=document.getElementById('modeSec');
   const modeSecKPSS=document.getElementById('modeSecKPSS');
   if(exam==='KPSS'){
@@ -2424,6 +2426,7 @@ function setAnMode(mod){
 
 function setAytAlan(alan){
   aytAlan=alan;
+  LS.set('k_aytAlan', alan); // ← ekle
   ['SAY','EA','SOZ'].forEach(a=>{
     const b=document.getElementById('alan'+a);
     if(!b)return;
