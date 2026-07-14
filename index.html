@@ -2367,7 +2367,9 @@ function initAnalizPage(){
   } else {
     if(modeSec)modeSec.style.display='flex';
     if(modeSecKPSS)modeSecKPSS.style.display='none';
-    setAnMode('tyt');
+    const savedAlan2 = LS.get('k_aytAlan');
+    if(savedAlan2){setAnMode('yks');setAytAlan(savedAlan2);}
+    else{setAnMode('tyt');}
   }
 }
 
