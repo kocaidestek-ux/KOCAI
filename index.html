@@ -1845,6 +1845,19 @@ function obFinish(){
   LS.set('k_profile',JSON.stringify(OB));
   const fieldMap = {sayisal:'SAY', esit:'EA', sozel:'SOZ'};
   if(OB.field && fieldMap[OB.field]) setAytAlan(fieldMap[OB.field]);
+  // Mizaç profili hesapla ve kaydet
+  if(OB.miz && OB.miz.length > 0){
+    const analitik = OB.miz.filter(a=>a===0).length;
+    const sosyal   = OB.miz.filter(a=>a===1).length;
+    const organize = OB.miz.filter(a=>a===2).length;
+    const pratik   = OB.miz.filter(a=>a===3).length;
+    const max = Math.max(analitik,sosyal,organize,pratik);
+    if(max===analitik)      OB.mizProfil='Analitik';
+    else if(max===sosyal)   OB.mizProfil='Sosyal';
+    else if(max===organize) OB.mizProfil='Stratejik';
+    else                    OB.mizProfil='Pratik';
+  }
+  LS.set('k_profile', JSON.stringify(OB));
   document.getElementById('ob').style.display='none';
   document.getElementById('app').style.display='block';
   initApp();
@@ -3111,7 +3124,7 @@ function buildSysPrompt(){
     'lgs': 'LGS DAĞILIM: Matematik %30, Türkçe %30, Fen %20, İnkılap %10, İngilizce %10.',
   };
   const dagilim = alanDagilim[OB.field] || alanDagilim['tyt'];
-
+  const mizAktivite = OB.mizProfil==='Analitik' ? '- Molalarda: 15 dk yuruyus veya klasik muzik. Pomodoro (50+10). Satranc, bulmaca.' : OB.mizProfil==='Sosyal' ? '- Molalarda: 15 dk dans, sarki, arkadas mesajlasma. Kisa sporlar, podcast.' : OB.mizProfil==='Stratejik' ? '- Molalarda: 10 dk meditasyon veya haftalik plan gozden gecirme. Yoga, satranc.' : '- Molalarda: 15 dk aktif spor (futbol, basketbol, jimnastik). Ritimli muzik.';
   // KPSS konuları
   const kpssKonular = OB.exam === 'KPSS' ? `
 KPSS ÖZEL KONULAR:
@@ -3166,6 +3179,8 @@ SON ${kalanGun2} GÜN - SERİ DENEME MODU:
     '- Ama her zaman cozum odakli bitir.\n\n' +
     'TUTARLILIK: Zayif konular her zaman once, ayni net icin ayni kaynak seviyesi.\n\n' +
     'ALAN BAZLI ODEV DAGILIMI:\n' + dagilim + '\n\n' +
+    'MIZAC PROFILI: ' + (OB.mizProfil||'Analitik') + '\n' +
+    'MIZACA GORE MOLA VE AKTIVITE:\n' + mizAktivite + '\n\n' +
     kpssKonular + yakinDeneme;
 }
 
